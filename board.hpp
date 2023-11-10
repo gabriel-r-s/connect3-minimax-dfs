@@ -50,7 +50,8 @@ struct GameTree {
     void create_minimax() {
         std::vector<uint32_t> queue;
         bool min_max;
-        for (Node leaf: leaves) {
+        for (uint32_t i: leaves) {
+            Node leaf = nodes[i];
             switch (leaf.state.result()) {
             // não é possível ganhar no turno do
             // adversário, então esse turno era nosso,
@@ -82,7 +83,11 @@ struct GameTree {
     }
 
     void minimax(Node node, bool min_max) {
-        for (parent: node.parents) {
+        for (uint32_t i: node.parents) {
+            if (i == -1) {
+                continue;
+            }
+            Node parent = nodes[i];
             if (min_max == MIN) {
                 parent.utility = std::min(parent.utility, node.utility);
             } else {
@@ -97,9 +102,9 @@ struct GameTree {
     
     // retorna movimento realizado para o nó filho mais favorável de acordo com campo `utility`
     uint8_t minimax_next(Node node) {
-        for (uint8_t i = 0; i < node.size(), i++) {
+        for (uint8_t i = 0; i < node.children.size(); i++) {
             uint32_t child = node.children[i];
-            if (child != -1 && nodes[child] == 1) {
+            if (child != -1 && nodes[child].utility == 1) {
                 return i;
             }
         }
