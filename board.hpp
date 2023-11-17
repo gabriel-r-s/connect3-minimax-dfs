@@ -1,12 +1,17 @@
 #include <vector>
 #include <cstdint>
+#include <climits>
+#include <algorithm>
 
 enum GameResult {
-    GameResult_Player1_Wins,
-    GameResult_Player2_Wins,
+    GameResult_Win,
+    GameResult_Loss,
     GameResult_Draw,
     GameResult_NotDone,
 };
+
+#define MIN false
+#define MAX false
 
 struct GameState {
     // cada coluna, usando bit field pra economizar o maximo possivel de memoria
@@ -29,9 +34,9 @@ struct GameState {
 
 struct Node {
     GameState state;        // struct que armazena estado do tabuleiro
-    uint32_t parents[4];    // índices dos pais deste nó
-    uint32_t children[4];   // índices dos filhos deste nó
-    uint8_t utility;        // função de utilidade minimax
+    std::array<uint32_t, 4> parents;    // índices dos pais deste nó
+    std::array<uint32_t, 4> children;   // índices dos filhos deste nó
+    int8_t utility;        // função de utilidade minimax
 };
 
 struct GameTree {
@@ -42,12 +47,68 @@ struct GameTree {
     GameTree(GameState initial);
 
     // preenche os campos utility de acordo com o algoritmo minimax
-    void create_minimax();
+    void create_minimax() {
+        std::vector<uint32_t> queue;
+        bool min_max;
+        for (uint32_t i: leaves) {
+            Node leaf = nodes[i];
+            switch (leaf.state.result()) {
+            // não é possível ganhar no turno do
+            // adversário, então esse turno era nosso,
+            // minimizamos o turno anterior
+            case GameResult_Win:
+                leaf.utility = 1;
+                min_max = MIN;
+                break;
+            // só é possível perder no turno do adversário,
+            // o contrário se aplica
+            case GameResult_Loss:
+                leaf.utility = -1;
+                min_max = MAX;
+                break;
+            // só é possível empatar na última jogada, a 
+            // do P2, então decidimos que o humano sempre
+            // começa e esse turno é sempre nosso
+            case GameResult_Draw:
+                leaf.utility = 0;
+                min_max = MIN;
+                break;
+            // estamos navegando as folhas, é impossível
+            // não ter terminado
+            case GameResult_NotDone:
+                break;
+            }
+            minimax(leaf, min_max);
+        }
+    }
+
+    void minimax(Node node, bool min_max) {
+        for (uint32_t i: node.parents) {
+            if (i == -1) {
+                continue;
+            }
+            Node parent = nodes[i];
+            if (min_max == MIN) {
+                parent.utility = std::min(parent.utility, node.utility);
+            } else {
+                parent.utility = std::max(parent.utility, node.utility);
+            }
+            minimax(parent, !min_max);
+        }
+    }
 
     // faz busca em profundidade a partir do nó, com máximo `depth` e retorna o primeiro movimento realizado
     unsigned dfs_next(Node node);
     
     // retorna movimento realizado para o nó filho mais favorável de acordo com campo `utility`
-    unsigned minimax_next(Node node);
+    uint8_t minimax_next(Node node) {
+        for (uint8_t i = 0; i < node.children.size(); i++) {
+            uint32_t child = node.children[i];
+            if (child != -1 && nodes[child].utility == 1) {
+                return i;
+            }
+        }
+        return -1;
+    }
 };
 
