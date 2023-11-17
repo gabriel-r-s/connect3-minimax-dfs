@@ -1,6 +1,41 @@
 #include <cstdio>
 #include "board.hpp"
 
+void print_board(Board board) {
+    uint8_t col[] = { board.col0, board.col1, board.col2, board.col3 };
+    uint8_t len[] = { board.len0, board.len1, board.len2, board.len3 };
+
+    for (int i = 3; i >= 0; i--) {
+        for (int j = 0; j < 4; j++) {
+            if (i >= len[j]) {
+                printf(".");
+            } else {
+                printf("%c", (col[j] & (1 << i)) != 0 ? 'X' : 'O');
+            }
+        }
+        if (i == 0) {
+            printf("\t");
+        } else {
+            printf("\n");
+        }
+    }
+
+    switch (board.result()) {
+    case Result_CpuWin:
+        printf("CPU Wins\n\n");
+        break;
+    case Result_CpuLoss:
+        printf("Player Wins\n\n");
+        break;
+    case Result_Draw:
+        printf("Draw!\n\n");
+        break;
+    case Result_NotDone:
+        printf("\n\n");
+        break;
+    }
+}
+
 void test_many(Board state, bool turn, unsigned depth) {
     for (int col = 0; col < 4; col++) {
         Board copy = state;
@@ -10,7 +45,7 @@ void test_many(Board state, bool turn, unsigned depth) {
         if (depth == 0 || result != Result_NotDone) {
             return;
         }
-        pall(copy, !turn, depth - 1);
+        test_many(copy, !turn, depth - 1);
     }
 }
 
@@ -48,40 +83,6 @@ void test_individual() {
     print_board(state);
 }
 
-void print_board(Board board) {
-    uint8_t col[] = { board.col0, board.col1, board.col2, board.col3 };
-    uint8_t len[] = { board.len0, board.len1, board.len2, board.len3 };
-
-    for (int i = 3; i >= 0; i--) {
-        for (int j = 0; j < 4; j++) {
-            if (i >= len[j]) {
-                printf(".");
-            } else {
-                printf("%c", (col[j] & (1 << i)) != 0 ? 'X' : 'O');
-            }
-        }
-        if (i == 0) {
-            printf("\t");
-        } else {
-            printf("\n");
-        }
-    }
-
-    switch (board.result()) {
-    case Result_CpuWin:
-        printf("CPU Wins\n\n");
-        break;
-    case Result_CpuLoss:
-        printf("Player Wins\n\n");
-        break;
-    case Result_Draw:
-        printf("Draw!\n\n");
-        break;
-    case Result_NotDone:
-        printf("\n\n");
-        break;
-    }
-}
 
 int main() {
     // pall(Board(), false, 4);
