@@ -1,11 +1,9 @@
-#include <vector>
-#include <cstdint>
-
 enum GameResult {
     GameResult_Player1_Wins,
     GameResult_Player2_Wins,
     GameResult_Draw,
     GameResult_NotDone,
+    GameResult_Invalid
 };
 
 struct GameState {
@@ -19,6 +17,7 @@ struct GameState {
     unsigned len2: 3;
     unsigned len3: 3;
     unsigned len4: 3;
+    unsigned pading : 4 = 0; //alinhamento de memória, o compilador não gosta de coisas com 28 bits.
 
     // 'joga' neste tabuleiro na coluna e turno determinados, gerando o filho
     GameState play(unsigned col, bool turn);
@@ -27,27 +26,5 @@ struct GameState {
     GameResult result();
 };
 
-struct Node {
-    GameState state;        // struct que armazena estado do tabuleiro
-    uint32_t parents[4];    // índices dos pais deste nó
-    uint32_t children[4];   // índices dos filhos deste nó
-    uint8_t utility;        // função de utilidade minimax
-};
 
-struct GameTree {
-    std::vector<Node> nodes;        // vetor que armazena todos os nós
-    std::vector<uint32_t> leaves;   // vetor que armazena os índices dos nós folha
-
-    // cria a árvore usando `initial` como raiz
-    GameTree(GameState initial);
-
-    // preenche os campos utility de acordo com o algoritmo minimax
-    void create_minimax();
-
-    // faz busca em profundidade a partir do nó, com máximo `depth` e retorna o primeiro movimento realizado
-    unsigned dfs_next(Node node);
-    
-    // retorna movimento realizado para o nó filho mais favorável de acordo com campo `utility`
-    unsigned minimax_next(Node node);
-};
 
