@@ -15,13 +15,24 @@ void print_board(const GameState &board)
 int main()
 {
     GameState board;
-    while (true)
+    while (board.result() == GameResult_NotDone)
     {
         print_board(board);
-        cout << "Linhas do jogador 1: " << board.get_v_lines(4, 0) << "\nLinhas do jogador 2: " << board.get_v_lines(4, 1) << '\n';
         char c = cin.get();
         cin.ignore();
         c -= '1';
         board = board.try_play(c);
+    }
+    switch (board.result())
+    {
+    case GameResult_Player1_Wins:
+        cout << "que legal, o jogador 1 acabou de destruir o jogador 2\n";
+        break;
+    case GameResult_Player2_Wins:
+        cout << "que legal, o jogador 2 acabou de destruir o jogador 1\n";
+        break;
+    default:
+        cout << "isso nao deveria acontecer\n";
+        break;
     }
 }
