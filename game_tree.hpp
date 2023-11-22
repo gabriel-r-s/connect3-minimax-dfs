@@ -9,7 +9,7 @@ class GameManager
     // função de maximisação
     unsigned char max(BoardArray &boards, uint8_t depth)
     {
-        unsigned char index=0;
+        unsigned char index = 0;
         float max = -(std::numeric_limits<float>::infinity());
         for (unsigned char i = 0; i < boards.num_board; i++)
         {
@@ -22,10 +22,10 @@ class GameManager
         }
         return index;
     }
-        // função de minimisação
+    // função de minimisação
     unsigned char min(BoardArray &boards, uint8_t depth)
     {
-        unsigned char index=0;
+        unsigned char index = 0;
         float min = (std::numeric_limits<float>::infinity());
         for (unsigned char i = 0; i < boards.num_board; i++)
         {
@@ -46,10 +46,11 @@ class GameManager
         auto boards = board.calculate_sub_boards();
         unsigned char index = 0;
         if (board.turn == 0)
-            index=max(boards, depth);
+            index = max(boards, depth);
         else
-            index=min(boards, depth);
+            index = min(boards, depth);
         board = boards.board[index];
+        return board.evaluate();
     }
 
 public:
