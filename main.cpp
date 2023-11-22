@@ -1,29 +1,25 @@
-#include "board.hpp"
+#include "game_tree.hpp"
 #include <iostream>
 #include <stdlib.h>
 using namespace std;
-void print_board(const GameState &board)
-{
-    for (unsigned char i = 5; i <= 5; i--) // geramos um underflow.
-    {
-        for (unsigned j = 0; j < 7; j++)
-            cout << (i >= board.len[j] ? "*" : board.cols[j] & (1 << i) ? "2"
-                                                                        : "1");
-        cout << '\n';
-    }
-}
 int main()
 {
-    GameState board;
-    while (board.result() == GameResult_NotDone)
+    GameManager manager;
+    while (manager.board.result() == GameResult_NotDone)
     {
-        print_board(board);
-        char c = cin.get();
-        cin.ignore();
-        c -= '1';
-        board = board.try_play(c);
+        if(manager.board.turn==0)
+            manager.minimax_next();
+        else
+        {
+            char c=cin.get();
+            cin.ignore();
+            c -= '1';
+            manager.board.try_play(c);
+        }
+        system("cls");
+        manager.board.print();
     }
-    switch (board.result())
+    switch (manager.board.result())
     {
     case GameResult_Player1_Wins:
         cout << "que legal, o jogador 1 acabou de destruir o jogador 2\n";

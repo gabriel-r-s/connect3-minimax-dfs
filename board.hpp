@@ -1,3 +1,5 @@
+#include <iostream>
+using std::cout;
 enum GameResult
 {
     GameResult_Player1_Wins,
@@ -15,6 +17,18 @@ struct GameState
     unsigned char len[7] = {0, 0, 0, 0, 0, 0, 0};
     unsigned char turn = 0; // indica quem deve ser o próximo a jogar.
 
+    // imprime o tabuleiro
+    void print()
+    {
+        for (unsigned char i = 5; i <= 5; i--) // geramos um underflow.
+        {
+            for (unsigned j = 0; j < 7; j++)
+                cout << (i >= len[j] ? "*" : cols[j] & (1 << i) ? "2"
+                                                                : "1");
+            cout << '\n';
+        }
+    }
+
     // faz  a jogada na coluna e retorna o novo tabuleiro (não verifica validade)
     GameState play(unsigned col)
     {
@@ -29,15 +43,16 @@ struct GameState
     }
 
     // faz a jogada na coluna especificada e retorna o novo tabuleiro se for válido
-    GameState try_play(unsigned char col)
+    void try_play(unsigned char col)
     {
         GameState board = play(col);
-        return board.is_valid() ? board : *this;
+        *this = board;
     }
     // verifica se é vitória do player1, player2
     GameResult result()
     {
-        return (get_h_lines(4, 0) || get_v_lines(4, 0) || get_d_lines(4, 0))? GameResult_Player1_Wins : (get_h_lines(4, 1) || get_v_lines(4, 1) || get_d_lines(4, 1))? GameResult_Player2_Wins : GameResult_NotDone;
+        return (get_h_lines(4, 0) || get_v_lines(4, 0) || get_d_lines(4, 0)) ? GameResult_Player1_Wins : (get_h_lines(4, 1) || get_v_lines(4, 1) || get_d_lines(4, 1)) ? GameResult_Player2_Wins
+                                                                                                                                                                       : GameResult_NotDone;
     }
 
     // verifica a validade do tabuleiro
@@ -53,13 +68,26 @@ struct GameState
     {
         return (cols[col] >> line) & 1;
     }
-    // verifica se existe uma linha diagonal partindo do ponto especificado (sempre para cima e para a direita)
-    bool is_d_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
+    // verifica se existe uma linha diagonal partindo do ponto especificado (cima direita)
+    bool is_dru_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
     {
         bool final = true;
         if (7 < col + line_size)
             return false;
         for (unsigned char i = line, j = col; i < line + line_size; i++, j++)
+        {
+            if (i >= len[j] || get_position(i, j) != player)
+                return false;
+        }
+        return final;
+    }
+    // verifica se existe uma linha diagonal partindo do ponto especificado (cima esquerda)
+    bool is_dlu_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
+    {
+        bool final = true;
+        if (col < line_size - 1)
+            return false;
+        for (unsigned char i = line, j = col; i < line + line_size; i++, j--)
         {
             if (i >= len[j] || get_position(i, j) != player)
                 return false;
@@ -137,7 +165,9 @@ struct GameState
         {
             for (unsigned char j = 0; j < 7 - line_size + 1; j++)
             {
-                if (is_d_line(i, j, line_size, player))
+                if (is_dru_line(i, j, line_size, player))
+                    final++;
+                if (is_dlu_line(i, j, line_size, player))
                     final++;
             }
         }
@@ -146,13 +176,15 @@ struct GameState
     // calcula a utilidade desse estado do tabuleiro do ponto de vista do player turn==0 (valores mais altos são melhores para ele.)
     float evaluate()
     {
-        if(result()==GameResult_Player1_Wins)return 1000000;
-        if(result()==GameResult_Player2_Wins)return -1000000;
-        float score=0;
-        score += 10*(get_h_lines(2, 0) + get_v_lines(2, 0) + get_d_lines(2, 0));
-        score += 100*(get_h_lines(3, 0) + get_v_lines(3, 0) + get_d_lines(3, 0));
-        score -= 15*(get_h_lines(2, 1) + get_v_lines(2, 1) + get_d_lines(2, 1));
-        score -= 150*(get_h_lines(3, 1) + get_v_lines(3, 1) + get_d_lines(3, 1));
+        if (result() == GameResult_Player1_Wins)
+            return 1000000;
+        if (result() == GameResult_Player2_Wins)
+            return -1000000;
+        float score = 0;
+        score += 10 * (get_h_lines(2, 0) + get_v_lines(2, 0) + get_d_lines(2, 0));
+        score += 100 * (get_h_lines(3, 0) + get_v_lines(3, 0) + get_d_lines(3, 0));
+        score -= 15 * (get_h_lines(2, 1) + get_v_lines(2, 1) + get_d_lines(2, 1));
+        score -= 150 * (get_h_lines(3, 1) + get_v_lines(3, 1) + get_d_lines(3, 1));
         return score;
     }
 
