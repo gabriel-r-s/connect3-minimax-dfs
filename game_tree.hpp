@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <limits>
 #include "board.hpp"
-
 struct GameManager
 {
     GameState board; // tabuleiro atual do jogo
@@ -39,23 +38,21 @@ struct GameManager
         return index;
     }
     // implementação do mine max
-    float evaluate_mine_max(GameState &cboard, uint8_t depth)
+    float evaluate_mine_max(GameState &board, uint8_t depth)
     {
-        if (!depth || cboard.result() != GameResult_NotDone)
-            return cboard.evaluate();
-        auto boards = cboard.calculate_sub_boards();
+        if (depth == 0 || board.result() != GameResult_NotDone)
+            return board.evaluate();
+        auto boards = board.calculate_sub_boards();
         unsigned char index = 0;
-        if (cboard.turn == 0)
+        if (board.turn == 0)
             index = max(boards, depth);
         else
             index = min(boards, depth);
-        cboard = boards.board[index];
-        return cboard.evaluate();
+        board = boards.board[index];
+        return board.evaluate();
     }
 
 public:
-
-
     // atualiza o tabuleiro usando busca em profundidade como base.
     void dfs_next(uint8_t depth = 6);
 

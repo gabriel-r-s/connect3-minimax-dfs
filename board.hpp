@@ -1,5 +1,10 @@
 #include <iostream>
 using std::cout;
+#include <math.h>
+
+// macro de avaliação de quadrados
+#define square(i, j) 1000 / (fabs(2.5 - i) * 10 + fabs(3 - j) * 10)
+
 enum GameResult
 {
     GameResult_Player1_Wins,
@@ -52,6 +57,7 @@ struct GameState
     GameResult result()
     {
         return (get_h_lines(4, 0) || get_v_lines(4, 0) || get_d_lines(4, 0)) ? GameResult_Player1_Wins : (get_h_lines(4, 1) || get_v_lines(4, 1) || get_d_lines(4, 1)) ? GameResult_Player2_Wins
+                                                                                                     : is_full()                                                       ? GameResult_Draw
                                                                                                                                                                        : GameResult_NotDone;
     }
 
@@ -60,6 +66,14 @@ struct GameState
     {
         for (int i = 0; i < 7; i++)
             if (len[i] > 6)
+                return false;
+        return true;
+    }
+    // verifica se o tabuleiro está cheio
+    bool is_full()
+    {
+        for (int i = 0; i < 7; i++)
+            if (len[i] < 6)
                 return false;
         return true;
     }
@@ -161,9 +175,9 @@ struct GameState
     {
         unsigned final = 0;
         player = player == 2 ? turn : player;
-        for (unsigned char i = 0; i < 6 - line_size + 1; i++)
+        for (unsigned char i = 0; i < 6; i++)
         {
-            for (unsigned char j = 0; j < 7 - line_size + 1; j++)
+            for (unsigned char j = 0; j < 7; j++)
             {
                 if (is_dru_line(i, j, line_size, player))
                     final++;
@@ -180,11 +194,18 @@ struct GameState
             return 1000000;
         if (result() == GameResult_Player2_Wins)
             return -1000000;
+        if (result() == GameResult_Draw)
+            return 0;
         float score = 0;
-        score += 10 * (get_h_lines(2, 0) + get_v_lines(2, 0) + get_d_lines(2, 0));
-        score += 100 * (get_h_lines(3, 0) + get_v_lines(3, 0) + get_d_lines(3, 0));
-        score -= 15 * (get_h_lines(2, 1) + get_v_lines(2, 1) + get_d_lines(2, 1));
-        score -= 150 * (get_h_lines(3, 1) + get_v_lines(3, 1) + get_d_lines(3, 1));
+        for (int j = 0; j < 7; j++)
+        {
+            for (int i = 0; i< 6; i++)
+            {
+                if (len[j] <= i)
+                    continue;
+                score += get_position(i, j) == 0 ? square(i, j) : -square(i, j);
+            }
+        }
         return score;
     }
 

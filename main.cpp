@@ -1,5 +1,6 @@
 #include "game_tree.hpp"
 #include <iostream>
+#include <limits>
 #include <stdlib.h>
 using namespace std;
 int main()
@@ -8,7 +9,7 @@ int main()
     while (manager.board.result() == GameResult_NotDone)
     {
         if(manager.board.turn==0)
-            manager.minimax_next();
+            manager.minimax_next(7);
         else
         {
             char c=cin.get();
