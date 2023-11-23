@@ -8,15 +8,15 @@ int main()
     GameManager manager;
     while (manager.board.result() == GameResult_NotDone)
     {
-        if(manager.board.turn==0)
+        //if(manager.board.turn==0)
             manager.minimax_next(7);
-        else
+        /*else
         {
             char c=cin.get();
             cin.ignore();
             c -= '1';
             manager.board.try_play(c);
-        }
+        }*/
         system("cls");
         manager.board.print();
     }
