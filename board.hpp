@@ -12,22 +12,26 @@ enum GameResult
     GameResult_Draw,
     GameResult_NotDone
 };
-
+// dimenções do tabuleiro
+#define width 7
+#define height 6
+// quantos items devem ser conectados
+#define connect_win 4
 struct BoardArray; // forward declaration
 struct GameState
 {
     // array de colunas
-    unsigned char cols[7] = {0, 0, 0, 0, 0, 0, 0};
+    unsigned char cols[width];
     // numero de elementos em cada coluna
-    unsigned char len[7] = {0, 0, 0, 0, 0, 0, 0};
+    unsigned char len[width];
     unsigned char turn = 0; // indica quem deve ser o próximo a jogar.
 
     // imprime o tabuleiro
     void print()
     {
-        for (unsigned char i = 5; i <= 5; i--) // geramos um underflow.
+        for (unsigned char i = height - 1; i < height; i--) // geramos um underflow.
         {
-            for (unsigned j = 0; j < 7; j++)
+            for (unsigned j = 0; j < width; j++)
                 cout << (i >= len[j] ? "*" : cols[j] & (1 << i) ? "2"
                                                                 : "1");
             cout << '\n';
@@ -38,7 +42,7 @@ struct GameState
     GameState play(unsigned col)
     {
         GameState final = *this;
-        if (col < 7)
+        if (col < width)
         {
             final.cols[col] += (turn << len[col]);
             final.len[col]++;
@@ -47,33 +51,34 @@ struct GameState
         return final;
     }
 
-    // faz a jogada na coluna especificada e retorna o novo tabuleiro se for válido
+    // faz a jogada na coluna especificada e atualiza o tabuleiro se for válido
     void try_play(unsigned char col)
     {
         GameState board = play(col);
-        *this = board;
+        if (board.is_valid())
+            *this = board;
     }
     // verifica se é vitória do player1, player2
     GameResult result()
     {
-        return (get_h_lines(4, 0) || get_v_lines(4, 0) || get_d_lines(4, 0)) ? GameResult_Player1_Wins : (get_h_lines(4, 1) || get_v_lines(4, 1) || get_d_lines(4, 1)) ? GameResult_Player2_Wins
-                                                                                                     : is_full()                                                       ? GameResult_Draw
-                                                                                                                                                                       : GameResult_NotDone;
+        return (get_h_lines(connect_win, 0) || get_v_lines(connect_win, 0) || get_d_lines(connect_win, 0)) ? GameResult_Player1_Wins : (get_h_lines(connect_win, 1) || get_v_lines(connect_win, 1) || get_d_lines(connect_win, 1)) ? GameResult_Player2_Wins
+                                                                                                                                   : is_full()                                                                                     ? GameResult_Draw
+                                                                                                                                                                                                                                   : GameResult_NotDone;
     }
 
     // verifica a validade do tabuleiro
     bool is_valid()
     {
-        for (int i = 0; i < 7; i++)
-            if (len[i] > 6)
+        for (int i = 0; i < width; i++)
+            if (len[i] > height)
                 return false;
         return true;
     }
     // verifica se o tabuleiro está cheio
     bool is_full()
     {
-        for (int i = 0; i < 7; i++)
-            if (len[i] < 6)
+        for (int i = 0; i < width; i++)
+            if (len[i] < height)
                 return false;
         return true;
     }
@@ -86,7 +91,7 @@ struct GameState
     bool is_dru_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
     {
         bool final = true;
-        if (7 < col + line_size)
+        if (width < col + line_size)
             return false;
         for (unsigned char i = line, j = col; i < line + line_size; i++, j++)
         {
@@ -125,7 +130,7 @@ struct GameState
     bool is_h_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
     {
         bool final = true;
-        if (col + line_size > 7)
+        if (col + line_size > width)
             return false;
         for (unsigned char j = col; j < col + line_size; j++)
         {
@@ -139,9 +144,9 @@ struct GameState
     {
         unsigned final = 0;
         player = player == 2 ? turn : player;
-        for (unsigned char i = 0; i < 6; i++)
+        for (unsigned char i = 0; i < height; i++)
         {
-            for (unsigned char j = 0; j < 7 - line_size + 1; j++)
+            for (unsigned char j = 0; j < width - line_size + 1; j++)
             {
                 if (is_h_line(i, j, line_size, player))
                 {
@@ -157,9 +162,9 @@ struct GameState
     {
         unsigned final = 0;
         player = player == 2 ? turn : player;
-        for (unsigned char j = 0; j < 7; j++)
+        for (unsigned char j = 0; j < width; j++)
         {
-            for (unsigned char i = 0; i < 6 - line_size + 1; i++)
+            for (unsigned char i = 0; i < height - line_size + 1; i++)
             {
                 if (is_v_line(i, j, line_size, player))
                 {
@@ -175,9 +180,9 @@ struct GameState
     {
         unsigned final = 0;
         player = player == 2 ? turn : player;
-        for (unsigned char i = 0; i < 6; i++)
+        for (unsigned char i = 0; i < height; i++)
         {
-            for (unsigned char j = 0; j < 7; j++)
+            for (unsigned char j = 0; j < width; j++)
             {
                 if (is_dru_line(i, j, line_size, player))
                     final++;
@@ -197,9 +202,9 @@ struct GameState
         if (result() == GameResult_Draw)
             return 0;
         float score = 0;
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < width; j++)
         {
-            for (int i = 0; i< 6; i++)
+            for (int i = 0; i < height; i++)
             {
                 if (len[j] <= i)
                     continue;
@@ -216,7 +221,7 @@ struct GameState
 // matriz de tabuleiros, evitar o uso de std vector.
 struct BoardArray
 {
-    GameState board[7];
+    GameState board[width];
     unsigned char num_board = 0;
     void insert(GameState board)
     {
@@ -229,7 +234,7 @@ struct BoardArray
 BoardArray GameState::calculate_sub_boards()
 {
     BoardArray final;
-    for (unsigned i = 0; i < 7; i++)
+    for (unsigned i = 0; i < width; i++)
     {
         auto temp_board = play(i);
         if (temp_board.is_valid())
