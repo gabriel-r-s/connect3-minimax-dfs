@@ -26,6 +26,15 @@ struct GameState
     unsigned char len[width];
     unsigned char turn = 0; // indica quem deve ser o próximo a jogar.
 
+    // inicialisa o tabuleiro
+    GameState()
+    {
+        for (int j = 0; j < height; j++)
+        {
+            cols[j] = 0;
+            len[j] = 0;
+        }
+    }
     // imprime o tabuleiro
     void print()
     {
