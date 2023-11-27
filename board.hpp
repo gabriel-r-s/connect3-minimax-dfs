@@ -12,14 +12,14 @@ enum GameResult
     GameResult_Draw,
     GameResult_NotDone
 };
-// dimenções do tabuleiro
-#define width 7
-#define height 6
-// quantos items devem ser conectados
+// tamanho da linha para ganhar.
 #define connect_win 4
 struct BoardArray; // forward declaration
 struct GameState
 {
+    // dimenções do tabuleiro
+    static const unsigned char width = 7;
+    static const unsigned char height = 6;
     // array de colunas
     unsigned char cols[width];
     // numero de elementos em cada coluna
@@ -216,7 +216,7 @@ struct GameState
             for (int i = 0; i < height; i++)
             {
                 if (len[j] <= i)
-                    continue;
+                    break;
                 score += get_position(i, j) == 0 ? square(i, j) : -square(i, j);
             }
         }
@@ -230,7 +230,7 @@ struct GameState
 // matriz de tabuleiros, evitar o uso de std vector.
 struct BoardArray
 {
-    GameState board[width];
+    GameState board[GameState::width];
     unsigned char num_board = 0;
     void insert(GameState board)
     {
