@@ -48,7 +48,7 @@ struct GameState
     }
 
     // faz  a jogada na coluna e retorna o novo tabuleiro (não verifica validade)
-    GameState play(unsigned col)
+    GameState play(unsigned col) const
     {
         GameState final = *this;
         if (col < width)
@@ -68,7 +68,7 @@ struct GameState
             *this = board;
     }
     // verifica se é vitória do player1, player2
-    GameResult result()
+    GameResult result() const
     {
         return (get_h_lines(connect_win, 0) || get_v_lines(connect_win, 0) || get_d_lines(connect_win, 0)) ? GameResult_Player1_Wins : (get_h_lines(connect_win, 1) || get_v_lines(connect_win, 1) || get_d_lines(connect_win, 1)) ? GameResult_Player2_Wins
                                                                                                                                    : is_full()                                                                                     ? GameResult_Draw
@@ -84,7 +84,7 @@ struct GameState
         return true;
     }
     // verifica se o tabuleiro está cheio
-    bool is_full()
+    bool is_full() const
     {
         for (int i = 0; i < width; i++)
             if (len[i] < height)
@@ -92,12 +92,12 @@ struct GameState
         return true;
     }
     // retorna o valor dada uma linha e coluna
-    unsigned char get_position(unsigned char line, unsigned char col)
+    unsigned char get_position(unsigned char line, unsigned char col) const
     {
         return (cols[col] >> line) & 1;
     }
     // verifica se existe uma linha diagonal partindo do ponto especificado (cima direita)
-    bool is_dru_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
+    bool is_dru_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player) const
     {
         bool final = true;
         if (width < col + line_size)
@@ -110,7 +110,7 @@ struct GameState
         return final;
     }
     // verifica se existe uma linha diagonal partindo do ponto especificado (cima esquerda)
-    bool is_dlu_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
+    bool is_dlu_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player) const
     {
         bool final = true;
         if (col < line_size - 1)
@@ -123,7 +123,7 @@ struct GameState
         return final;
     }
     // verifica se existe uma linha vertical partindo do ponto especificado (sempre para cima)
-    bool is_v_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
+    bool is_v_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player) const
     {
         bool final = true;
         if (len[col] < line + line_size)
@@ -136,7 +136,7 @@ struct GameState
         return final;
     }
     // verifica se existe uma linha horisontal partindo do ponto especificado(sempre para a direita)
-    bool is_h_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)
+    bool is_h_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)  const
     {
         bool final = true;
         if (col + line_size > width)
@@ -149,7 +149,7 @@ struct GameState
         return final;
     }
     // calcula a quantidade de linhas horisontais de tamanho n do jogador atual (caso um valor seja passado para player, o número será calculado para o jogador expecificado.)
-    unsigned get_h_lines(unsigned line_size, unsigned char player = 2)
+    unsigned get_h_lines(unsigned line_size, unsigned char player = 2)  const
     {
         unsigned final = 0;
         player = player == 2 ? turn : player;
@@ -167,7 +167,7 @@ struct GameState
         return final;
     }
     // calcula a quantidade de linhas verticais de tamanho n do jogador atual (caso um valor seja passado para player, o número será calculado para o jogador expecificado.)
-    unsigned get_v_lines(unsigned line_size, unsigned char player = 2)
+    unsigned get_v_lines(unsigned line_size, unsigned char player = 2)  const
     {
         unsigned final = 0;
         player = player == 2 ? turn : player;
@@ -185,7 +185,7 @@ struct GameState
         return final;
     }
     // calcula a quantidade de linhas diagonais de tamanho n do jogador atual (caso um valor seja passado para player, o número será calculado para o jogador expecificado.)
-    unsigned get_d_lines(unsigned line_size, unsigned char player = 2)
+    unsigned get_d_lines(unsigned line_size, unsigned char player = 2)  const
     {
         unsigned final = 0;
         player = player == 2 ? turn : player;
@@ -202,7 +202,7 @@ struct GameState
         return final;
     }
     // calcula a utilidade desse estado do tabuleiro do ponto de vista do player turn==0 (valores mais altos são melhores para ele.)
-    float evaluate()
+    float evaluate() const
     {
         if (result() == GameResult_Player1_Wins)
             return 1000000;
@@ -224,7 +224,7 @@ struct GameState
     }
 
     // calcula tabuleiros pocíveis a partir deste tabuleiro
-    BoardArray calculate_sub_boards();
+    BoardArray calculate_sub_boards() const;
 };
 
 // matriz de tabuleiros, evitar o uso de std vector.
@@ -240,7 +240,7 @@ struct BoardArray
 };
 
 // tive que definir a função fora, ela precisa saber o tamanho da struct BoardArray
-BoardArray GameState::calculate_sub_boards()
+BoardArray GameState::calculate_sub_boards() const
 {
     BoardArray final;
     for (unsigned i = 0; i < width; i++)
