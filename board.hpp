@@ -60,7 +60,7 @@ public:
                     x += dx;
                     y += dx * dy;
                 }
-            if (num == 3)
+            if (num >= 3)
                 return true;
         }
         return false;
