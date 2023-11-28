@@ -7,7 +7,7 @@ public:
     // altura do tabuleiro
     const static int height = 6;
     // verifica se existe espaço livre em uma coluna
-    bool can_play(int col)
+    bool can_play(int col)const
     {
         return len[col] < height;
     }
@@ -39,12 +39,12 @@ public:
         return sec_pos;
     }
     // retorna a quantidade de movimentos realisados no tabuleiro
-    unsigned int get_moves()
+    unsigned int get_moves()const
     {
         return moves;
     }
     // verifica se jogar em uma coluna resulta na vitória do jogador atual
-    bool wins(int col)
+    bool wins(int col)const
     {
         int player = 1 + moves % 2;
         // verifica por alinhamento vertical
