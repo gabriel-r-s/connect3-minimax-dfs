@@ -1,29 +1,29 @@
 #include <windows.h>
 #include "solver.hpp"
 #include <fstream>
+#include <sstream>
 #include <chrono>
 #include <thread>
 #include <iostream>
-using std::ifstream, std::ofstream, std::string, std::chrono::steady_clock, std::chrono::duration, std::chrono::time_point;
+using std::ifstream, std::ofstream, std::string, std::chrono::steady_clock, std::chrono::duration, std::chrono::time_point, std::stringstream;
 using std::thread;
 // testa uma linha de um dataset
 string test_line(string sec, string expected_score)
 {
-    string final;
+    stringstream final;
     solver s;
     board b;
     if (b.play(sec.c_str()) != sec.size()) // a jogada era inválida
-        final += "erro\n";
+        final << "erro\n";
     else
     {
         time_point<steady_clock, duration<float>> start_point = steady_clock::now();
         duration<float> dur;
         int score = s.mini_max(b, -b.width * b.height / 2, b.width * b.height / 2); // são os extremos da função de avaliação.
         dur = steady_clock::now() - start_point;
-        float exec_time = dur.count() / 1e-6;
-        final += sec + '\t' + expected_score + '\t' + std::to_string(score) + '\t' + std::to_string(s.get_nodes()) + '\t' + std::to_string(exec_time) + '\n';
+        final << sec << '\t' << expected_score << '\t' << score << '\t' << s.get_nodes() << '\t' << dur.count() / 1e-6 << '\n';
     }
-    return final;
+    return final.str();
 }
 // testa um dataset
 void test_minimax(const char *in_filename)
