@@ -1,253 +1,62 @@
-#include <iostream>
-using std::cout;
-#include <math.h>
-
-// macro de avaliação de quadrados
-#define square(i, j) 1000 / (fabs(2.5 - i) * 10 + fabs(3 - j) * 10)
-
-enum GameResult
+// esse arquivo contém uma classe para representar tabuleiros do jogo connect 4.
+class board
 {
-    GameResult_Player1_Wins,
-    GameResult_Player2_Wins,
-    GameResult_Draw,
-    GameResult_NotDone
+public:
+    // largura do tabuleiro
+    const static int width = 7;
+    // altura do tabuleiro
+    const static int height = 6;
+    // verifica se existe espaço livre em uma coluna
+    bool can_play(int col)
+    {
+        return len[col] < height;
+    }
+    // faz a jogada em uma determinada coluna (não verifica se a jogada é pocível ou não)
+    void play(int col)
+    {
+        board_array[col][len[col]] = 1 + moves % 2;
+        moves++;
+        len[col]++;
+    }
+    /*
+    faz uma sequência de jogadas.
+    Retorna o número de jogadas feitas.
+    Pode parar pelos 3 motivos:
+    1. todas as jogadas foram feitas
+    2. a próxima jogada resultaria em uma vitória do jogador atual.
+    3. a próxima jogada seria feita em uma coluna cheia
+    */
+    unsigned int play(const char *sec)
+    {
+        unsigned int sec_pos = 0;
+        while (sec[sec_pos])
+        {
+            if (!can_play(sec[sec_pos] - '1' || wins(sec[sec_pos] - '1'))) // o jogador atual ganha, ou a coluna está cheia
+                break;
+            play(sec[sec_pos]-'1');
+            sec_pos++;
+        }
+        return sec_pos;
+    }
+    // retorna a quantidade de movimentos realisados no tabuleiro
+    unsigned int get_moves()
+    {
+        return moves;
+    }
+    // verifica se jogar em uma coluna resulta na vitória do jogador atual
+    bool wins(int col)
+    {
+        int player = 1 + moves % 2;
+        // verifica por alinhamento vertical
+        if (len[col] >= 3 && board_array[col][len[col] - 1] == player && board_array[col][len[col] - 2] == player && board_array[col][len[col] - 3] == player)
+            return true;
+    }
+
+private:
+    // contador de movimentos, indica quantas pedras já foram jogadas
+    unsigned int moves = 0;
+    // matriz do tabuleiro, 0 indica vasio, 1 indica jogador 1 e 2 indica jogador 2
+    int board_array[width][height]{0};
+    // indica quantas pedras foram jogadas em determinada coluna
+    int len[width]{0};
 };
-// tamanho da linha para ganhar.
-#define connect_win 4
-struct BoardArray; // forward declaration
-struct GameState
-{
-    // dimenções do tabuleiro
-    static const unsigned char width = 7;
-    static const unsigned char height = 6;
-    // array de colunas
-    unsigned char cols[width];
-    // numero de elementos em cada coluna
-    unsigned char len[width];
-    unsigned char turn = 0; // indica quem deve ser o próximo a jogar.
-
-    // inicialisa o tabuleiro
-    GameState()
-    {
-        for (int j = 0; j < height; j++)
-        {
-            cols[j] = 0;
-            len[j] = 0;
-        }
-    }
-    // imprime o tabuleiro
-    void print()
-    {
-        for (unsigned char i = height - 1; i < height; i--) // geramos um underflow.
-        {
-            for (unsigned j = 0; j < width; j++)
-                cout << (i >= len[j] ? "*" : cols[j] & (1 << i) ? "2"
-                                                                : "1");
-            cout << '\n';
-        }
-    }
-
-    // faz  a jogada na coluna e retorna o novo tabuleiro (não verifica validade)
-    GameState play(unsigned col) const
-    {
-        GameState final = *this;
-        if (col < width)
-        {
-            final.cols[col] += (turn << len[col]);
-            final.len[col]++;
-            final.turn = final.turn ? 0 : 1;
-        }
-        return final;
-    }
-
-    // faz a jogada na coluna especificada e atualiza o tabuleiro se for válido
-    void try_play(unsigned char col)
-    {
-        GameState board = play(col);
-        if (board.is_valid())
-            *this = board;
-    }
-    // verifica se é vitória do player1, player2
-    GameResult result() const
-    {
-        return (get_h_lines(connect_win, 0) || get_v_lines(connect_win, 0) || get_d_lines(connect_win, 0)) ? GameResult_Player1_Wins : (get_h_lines(connect_win, 1) || get_v_lines(connect_win, 1) || get_d_lines(connect_win, 1)) ? GameResult_Player2_Wins
-                                                                                                                                   : is_full()                                                                                     ? GameResult_Draw
-                                                                                                                                                                                                                                   : GameResult_NotDone;
-    }
-
-    // verifica a validade do tabuleiro
-    bool is_valid()
-    {
-        for (int i = 0; i < width; i++)
-            if (len[i] > height)
-                return false;
-        return true;
-    }
-    // verifica se o tabuleiro está cheio
-    bool is_full() const
-    {
-        for (int i = 0; i < width; i++)
-            if (len[i] < height)
-                return false;
-        return true;
-    }
-    // retorna o valor dada uma linha e coluna
-    unsigned char get_position(unsigned char line, unsigned char col) const
-    {
-        return (cols[col] >> line) & 1;
-    }
-    // verifica se existe uma linha diagonal partindo do ponto especificado (cima direita)
-    bool is_dru_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player) const
-    {
-        bool final = true;
-        if (width < col + line_size)
-            return false;
-        for (unsigned char i = line, j = col; i < line + line_size; i++, j++)
-        {
-            if (i >= len[j] || get_position(i, j) != player)
-                return false;
-        }
-        return final;
-    }
-    // verifica se existe uma linha diagonal partindo do ponto especificado (cima esquerda)
-    bool is_dlu_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player) const
-    {
-        bool final = true;
-        if (col < line_size - 1)
-            return false;
-        for (unsigned char i = line, j = col; i < line + line_size; i++, j--)
-        {
-            if (i >= len[j] || get_position(i, j) != player)
-                return false;
-        }
-        return final;
-    }
-    // verifica se existe uma linha vertical partindo do ponto especificado (sempre para cima)
-    bool is_v_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player) const
-    {
-        bool final = true;
-        if (len[col] < line + line_size)
-            return false;
-        for (unsigned char i = line; i < line + line_size; i++)
-        {
-            if (get_position(i, col) != player)
-                return false;
-        }
-        return final;
-    }
-    // verifica se existe uma linha horisontal partindo do ponto especificado(sempre para a direita)
-    bool is_h_line(unsigned char line, unsigned char col, unsigned line_size, unsigned char player)  const
-    {
-        bool final = true;
-        if (col + line_size > width)
-            return false;
-        for (unsigned char j = col; j < col + line_size; j++)
-        {
-            if (line >= len[j] || get_position(line, j) != player)
-                return false;
-        }
-        return final;
-    }
-    // calcula a quantidade de linhas horisontais de tamanho n do jogador atual (caso um valor seja passado para player, o número será calculado para o jogador expecificado.)
-    unsigned get_h_lines(unsigned line_size, unsigned char player = 2)  const
-    {
-        unsigned final = 0;
-        player = player == 2 ? turn : player;
-        for (unsigned char i = 0; i < height; i++)
-        {
-            for (unsigned char j = 0; j < width - line_size + 1; j++)
-            {
-                if (is_h_line(i, j, line_size, player))
-                {
-                    final++;
-                    j += line_size - 1;
-                }
-            }
-        }
-        return final;
-    }
-    // calcula a quantidade de linhas verticais de tamanho n do jogador atual (caso um valor seja passado para player, o número será calculado para o jogador expecificado.)
-    unsigned get_v_lines(unsigned line_size, unsigned char player = 2)  const
-    {
-        unsigned final = 0;
-        player = player == 2 ? turn : player;
-        for (unsigned char j = 0; j < width; j++)
-        {
-            for (unsigned char i = 0; i < height - line_size + 1; i++)
-            {
-                if (is_v_line(i, j, line_size, player))
-                {
-                    final++;
-                    i += line_size - 1;
-                }
-            }
-        }
-        return final;
-    }
-    // calcula a quantidade de linhas diagonais de tamanho n do jogador atual (caso um valor seja passado para player, o número será calculado para o jogador expecificado.)
-    unsigned get_d_lines(unsigned line_size, unsigned char player = 2)  const
-    {
-        unsigned final = 0;
-        player = player == 2 ? turn : player;
-        for (unsigned char i = 0; i < height; i++)
-        {
-            for (unsigned char j = 0; j < width; j++)
-            {
-                if (is_dru_line(i, j, line_size, player))
-                    final++;
-                if (is_dlu_line(i, j, line_size, player))
-                    final++;
-            }
-        }
-        return final;
-    }
-    // calcula a utilidade desse estado do tabuleiro do ponto de vista do player turn==0 (valores mais altos são melhores para ele.)
-    float evaluate() const
-    {
-        if (result() == GameResult_Player1_Wins)
-            return 1000000;
-        if (result() == GameResult_Player2_Wins)
-            return -1000000;
-        if (result() == GameResult_Draw)
-            return 0;
-        float score = 0;
-        for (int j = 0; j < width; j++)
-        {
-            for (int i = 0; i < height; i++)
-            {
-                if (len[j] <= i)
-                    break;
-                score += get_position(i, j) == 0 ? square(i, j) : -square(i, j);
-            }
-        }
-        return score;
-    }
-
-    // calcula tabuleiros pocíveis a partir deste tabuleiro
-    BoardArray calculate_sub_boards() const;
-};
-
-// matriz de tabuleiros, evitar o uso de std vector.
-struct BoardArray
-{
-    GameState board[GameState::width];
-    unsigned char num_board = 0;
-    void insert(GameState board)
-    {
-        this->board[num_board] = board;
-        num_board++;
-    }
-};
-
-// tive que definir a função fora, ela precisa saber o tamanho da struct BoardArray
-BoardArray GameState::calculate_sub_boards() const
-{
-    BoardArray final;
-    for (unsigned i = 0; i < width; i++)
-    {
-        auto temp_board = play(i);
-        if (temp_board.is_valid())
-            final.insert(temp_board);
-    }
-    return final;
-}
