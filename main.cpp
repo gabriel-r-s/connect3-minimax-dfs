@@ -20,7 +20,7 @@ string test_line(string sec, string expected_score)
         duration<float> dur;
         int score = s.mini_max(b, -b.width * b.height / 2, b.width * b.height / 2); // são os extremos da função de avaliação.
         dur = steady_clock::now() - start_point;
-        float exec_time = dur.count() * 1e-6;
+        float exec_time = dur.count() / 1e-6;
         final += sec + '\t' + expected_score + '\t' + std::to_string(score) + '\t' + std::to_string(s.get_nodes()) + '\t' + std::to_string(exec_time) + '\n';
     }
     return final;
