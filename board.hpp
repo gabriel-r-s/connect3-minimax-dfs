@@ -93,7 +93,11 @@ public:
 
         return false;
     }
-
+    // gera uma chave única para o tabuleiro atual
+    uint64_t key()const
+    {
+        return stones + player_stones;
+    }
 private:
     // contador de movimentos, indica quantas pedras já foram jogadas
     unsigned int moves = 0;

@@ -13,7 +13,7 @@ class hash_table
 #define table_size 16777216
     std::vector<hash_table_element> table;
     // função para calcular índice de uma chave
-    unsigned int get_index(uint8_t key)
+    unsigned int get_index(uint64_t key)
     {
         return key % table_size;
     }
@@ -31,7 +31,7 @@ public:
         }
     }
     // função para obter o valor de um elemento da tabela (0 indica valor não existente)
-    uint8_t get(uint8_t key)
+    uint8_t get(uint64_t key)
     {
         if (key < (1LL < 56))
         {
