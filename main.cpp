@@ -5,7 +5,7 @@
 #include <chrono>
 #include <thread>
 #include <iostream>
-using std::ifstream, std::ofstream, std::string, std::chrono::steady_clock, std::chrono::duration, std::chrono::time_point, std::stringstream;
+using std::ifstream, std::ofstream, std::string, std::chrono::high_resolution_clock, std::chrono::duration, std::chrono::time_point, std::stringstream;
 using std::thread;
 // testa uma linha de um dataset
 string test_line(string sec, string expected_score)
@@ -17,10 +17,10 @@ string test_line(string sec, string expected_score)
         final << "erro\n";
     else
     {
-        time_point<steady_clock, duration<float>> start_point = steady_clock::now();
+        time_point<high_resolution_clock, duration<float>> start_point = high_resolution_clock::now();
         duration<float> dur;
         int score = s.mini_max(b, -b.width * b.height / 2, b.width * b.height / 2); // são os extremos da função de avaliação.
-        dur = steady_clock::now() - start_point;
+        dur = high_resolution_clock::now() - start_point;
         final << sec << '\t' << expected_score << '\t' << score << '\t' << s.get_nodes() << '\t' << dur.count() / 1e-6 << '\n';
     }
     return final.str();
@@ -57,10 +57,10 @@ int main()
     thread t4(test_minimax, "Test_L1_R1");
     thread t5(test_minimax, "Test_L1_R2");
     thread t6(test_minimax, "Test_L1_R3");
-    time_point<steady_clock, duration<float>> start = steady_clock::now();
+    time_point<high_resolution_clock, duration<float>> start = high_resolution_clock::now();
     while (1)
     {
-        duration<float> dur = steady_clock::now() - start;
+        duration<float> dur = high_resolution_clock::now() - start;
         if (dur.count() >= 3600)
             break;
         Sleep(1000);
