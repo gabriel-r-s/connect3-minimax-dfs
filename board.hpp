@@ -1,4 +1,5 @@
 // esse arquivo contém uma classe para representar tabuleiros do jogo connect 4.
+#include <cstdint>
 class board
 {
 public:
@@ -9,7 +10,12 @@ public:
     // verifica se existe espaço livre em uma coluna
     bool can_play(int col) const
     {
-        return len[col] < height;
+        return (stones & top_mask(col)) == 0;
+    }
+    // retorna o bitfield representando o topo da coluna no argumento
+    static uint64_t top_mask(int col)
+    {
+        return (uint64_t(1) << (height - 1)) << col*(height + 1);
     }
     // faz a jogada em uma determinada coluna (não verifica se a jogada é pocível ou não)
     void play(int col)
@@ -69,8 +75,8 @@ board(): board_array{0}, len{0} {}
 private:
     // contador de movimentos, indica quantas pedras já foram jogadas
     unsigned int moves = 0;
-    // matriz do tabuleiro, 0 indica vasio, 1 indica jogador 1 e 2 indica jogador 2
-    int board_array[width][height];
-    // indica quantas pedras foram jogadas em determinada coluna
-    int len[width];
+    // bit field representando as pedras do jogador atual
+    uint64_t player_stones;
+    // bit field representando qualquer pedra no tabuleiro
+    uint64_t stones;
 };
