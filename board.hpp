@@ -7,6 +7,9 @@ public:
     static const int width = 7;
     // altura do tabuleiro
     static const int height = 6;
+    // limite das pontuações
+    static const int min_score = -(width * height) / 2 + 3;
+    static const int max_score = (width * height) / 2 - 3;
     // verifica se existe espaço livre em uma coluna
     bool can_play(int col) const
     {
