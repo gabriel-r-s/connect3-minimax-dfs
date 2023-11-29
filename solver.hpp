@@ -4,11 +4,13 @@
 class solver
 {
 private:
+    int explore_order[board::width];
     // contador de tabuleiros explorados
     unsigned long long explored_nodes;
 
 public:
-    solver() : explored_nodes(0) {}
+    // construtor padrão, inicialisa a matriz de exploração
+    solver() : explored_nodes(0), explore_order{3, 4, 2, 5, 1, 6, 0} {}
     // retorna o número de tabuleiros explorados
     unsigned long long get_nodes()
     {
@@ -33,32 +35,29 @@ beta<=pr então beta<=vr<=pr
         if (b.get_moves() == board::width * board::height) // verifica por empate
             return 0;
 
-        for (int x = 0; x < board::width; x++) // check if current player can win next move
+        for (int x = 0; x < board::width; x++) // verificando se o jogador atual pode ganhar no próximo movimento
             if (b.can_play(x) && b.wins(x))
                 return (board::width * board::height + 1 - b.get_moves()) / 2;
 
-        int max = (board::width * board::height - 1 - b.get_moves()) / 2; // upper bound of our score as we cannot win immediately
+        int max = (board::width * board::height - 1 - b.get_moves()) / 2; // calculamos a pontuação máxima que podemos obter, conciderando que não podemos ganhar com uma jogada
         if (beta > max)
         {
-            beta = max; // there is no need to keep beta above our max possible score.
+            beta = max; // não faz sentido beta ser maior que a pontuação máxima
             if (alpha >= beta)
-                return beta; // prune the exploration if the [alpha;beta] window is empty.
+                return beta; // o intervalo de busca está vasio, não tem nada pra procurar
         }
 
-        for (int x = 0; x < board::width; x++) // compute the score of all possible next move and keep the best one
-            if (b.can_play(x))
+        for (int x = 0; x < board::width; x++) // verifica as pontuações dos próximos movimentos e retorna o melhor
+            if (b.can_play(explore_order[x]))
             {
                 board b2(b);
-                b2.play(x);
-                int score = -mini_max(b2, -beta, -alpha); // explore opponent's score within [-beta;-alpha] windows:
-                                                          // no need to have good precision for score better than beta (opponent's score worse than -beta)
-                                                          // no need to check for score worse than alpha (opponent's score worse better than -alpha)
-
+                b2.play(explore_order[x]);
+                int score = -mini_max(b2, -beta, -alpha); // a função é oposta, 22 para mim é -22 para o oponente
                 if (score >= beta)
-                    return score; // prune the exploration if we find a possible move better than what we were looking for.
+                    return score; // já encontramos uma pontuação boa o suficiente
                 if (score > alpha)
-                    alpha = score; // reduce the [alpha;beta] window for next exploration, as we only
-                                   // need to search for a position that is better than the best so far.
+                    alpha = score; // vamos diminuir a janela de busca
+
             }
 
         return alpha;
