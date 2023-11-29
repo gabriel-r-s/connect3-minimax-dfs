@@ -4,13 +4,13 @@
 // estrutura representando um elemento da tabela
 typedef struct
 {
-    uint64_t key : 56 = 0; // a chave do elemento armazenado
-    uint8_t val = 0;       // note que o campo acima tem 56bits, e por questão de alinhamento o compilador alocou 64bits para ele, o que significa que os bits mais significativos são usados pelo valor, como nosso tabuleiro só usa os 49 bits menos significativos não à problema
+    uint64_t key : 56; // a chave do elemento armazenado
+    uint8_t val = 0;   // note que o campo acima tem 56bits, e por questão de alinhamento o compilador alocou 64bits para ele, o que significa que os bits mais significativos são usados pelo valor, como nosso tabuleiro só usa os 49 bits menos significativos não à problema
 } hash_table_element;
 class hash_table
 {
-// quantidade de elementos na tabela (multiplique por 8 para obter tamanho em bytes)
-#define table_size 16777216
+    // quantidade de elementos na tabela (multiplique por 8 para obter tamanho em bytes)
+    static const unsigned int table_size = 16777216;
     std::vector<hash_table_element> table;
     // função para calcular índice de uma chave
     unsigned int get_index(uint64_t key)
