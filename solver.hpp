@@ -48,16 +48,15 @@ beta<=pr então beta<=vr<=pr
         }
 
         for (int x = 0; x < board::width; x++) // verifica as pontuações dos próximos movimentos e retorna o melhor
-            if (b.can_play(x))
+            if (b.can_play(explore_order[x]))
             {
                 board b2(b);
-                b2.play(x);
+                b2.play(explore_order[x]);
                 int score = -mini_max(b2, -beta, -alpha); // a função é oposta, 22 para mim é -22 para o oponente
                 if (score >= beta)
                     return score; // já encontramos uma pontuação boa o suficiente
                 if (score > alpha)
                     alpha = score; // vamos diminuir a janela de busca
-
             }
 
         return alpha;
