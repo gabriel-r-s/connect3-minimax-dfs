@@ -20,9 +20,14 @@ public:
     // faz a jogada em uma determinada coluna (não verifica se a jogada é pocível ou não)
     void play(int col)
     {
-        board_array[col][len[col]] = 1 + moves % 2;
+        player_stones ^= stones;// o bit field contendo a lista de pedras do jogador atual contém agora as pedras do próximo jogador
+        stones |= stones + bottom_mask(col);
         moves++;
-        len[col]++;
+    }
+    // retorna o bitfield do ponto mais baixo da coluna passada como argumento
+    uint64_t bottom_mask(int col)
+    {
+        return uint64_t(1) << col*(height+1);
     }
     /*
     faz uma sequência de jogadas.
