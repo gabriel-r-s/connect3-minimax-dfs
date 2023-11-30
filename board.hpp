@@ -25,6 +25,11 @@ public:
     {
         return (uint64_t(1) << (height - 1)) << col * (height + 1);
     }
+    // retorna um bitfield contendo um 1 no ponto mais baixo da coluna passada como argumento
+    static uint64_t bottom_mask(int col)
+    {
+        return uint64_t(1) << col * (height + 1);
+    }
     // faz a jogada em uma determinada coluna (não verifica se a jogada é pocível ou não)
     void play(int col)
     {
@@ -32,7 +37,7 @@ public:
         stones |= stones + bottom_mask(col);
         moves++;
     }
-    // retorna o bitfield do ponto mais baixo da coluna passada como argumento
+    // retorna um bitfield contendo um 1 no ponto mais baixo da coluna passada como argumento
     static uint64_t bottom_mask(int col)
     {
         return uint64_t(1) << col * (height + 1);
@@ -112,5 +117,7 @@ private:
     // bit field representando qualquer pedra no tabuleiro
     uint64_t stones = 0;
     // bit field contendo 1s na parte de baixo de cada coluna
-    uint64_t bottom_masc = bottom(width, height);
+    static const uint64_t bottom_mask_v = bottom(width, height);
+    // bitfield contendo a representação de um tabuleiro cheio
+    static const uint64_t full_board = bottom_mask_v * ((1ll << height)-1);
 };
