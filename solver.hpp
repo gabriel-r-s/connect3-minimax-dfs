@@ -1,6 +1,7 @@
 // esse arquivo contém a classe solver, uma classe que resolve o connect 4 usando minimax e busca em profundidade
 #include "board.hpp"
 #include "hash_table.hpp"
+#include "move_sorter.hpp"
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 class solver
@@ -49,18 +50,20 @@ beta<=pr então beta<=vr<=pr
             if (alpha >= beta)
                 return beta; // o intervalo de busca está vasio, não tem nada pra procurar
         }
-
-        for (int x = 0; x < board::width; x++) // verifica as pontuações dos próximos movimentos e retorna o melhor
-            if (next & board::column_mask(explore_order[x]))
-            {
-                board b2(b);
-                b2.play(explore_order[x]);
-                int score = -mini_max(b2, -beta, -alpha); // a função é oposta, 22 para mim é -22 para o oponente
-                if (score >= beta)
-                    return score; // já encontramos uma pontuação boa o suficiente (não salvamos na tabela porque a pontuação pode ser maior que ela)
-                if (score > alpha)
-                    alpha = score; // vamos diminuir a janela de busca
-            }
+        move_sorter my_moves;
+        for (int x = 0; x < board::width; x++) // ordena os movimentos em uma ordem do melhor para o pior usando a nossa função de pontuação como base
+            if (uint64_t move = next & board::column_mask(explore_order[x]))
+                my_moves.add(move, b.score(move));
+        while (uint64_t move = my_moves.get()) // verificando o melhor movimento
+        {
+            board b2(b);
+            b2.play(move);
+            int score = -mini_max(b2, -beta, -alpha); // a função é oposta, 22 para mim é -22 para o oponente
+            if (score >= beta)
+                return score; // já encontramos uma pontuação boa o suficiente (não salvamos na tabela porque a pontuação pode ser maior que ela)
+            if (score > alpha)
+                alpha = score; // vamos diminuir a janela de busca
+        }
 
         t.insert(b.key(), alpha - b.min_score + 1); // ou a pontuação é essa, ou ela é menor que essa
         return alpha;
