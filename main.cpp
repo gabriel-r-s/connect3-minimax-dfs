@@ -8,10 +8,9 @@
 using std::ifstream, std::ofstream, std::string, std::stringstream;
 using std::thread;
 // testa uma linha de um dataset
-string test_line(string sec, string expected_score)
+string test_line(string sec, string expected_score, solver &s)
 {
     stringstream final;
-    solver s;
     board b;
     if (b.play(sec.c_str()) != sec.size()) // a jogada era inválida
         final << "erro\n";
@@ -38,10 +37,12 @@ void test_minimax(const char *in_filename)
             outfile << "lista de jogadas\tpontos esperados\tpontos obtidos\ttabuleiros explorados\ttempo executado (nano-segundos)\n";
             outfile.close();
             string sec, expected_score;
+            solver s;
             while (std::getline(in_file, sec, ' ') && std::getline(in_file, expected_score, '\n'))
             {
                 outfile.open(out_filename, std::ios::app);
-                outfile << test_line(sec, expected_score);
+                outfile << test_line(sec, expected_score, s);
+                s.reset();
                 outfile.close();
             }
         }

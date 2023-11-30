@@ -12,7 +12,12 @@ private:
     hash_table t;
 public:
     // construtor padrão, inicialisa a matriz de exploração
-    solver() : explored_nodes(0), explore_order{3, 4, 2, 5, 1, 0, 6} {}
+    solver() : explored_nodes(0), explore_order{3, 4, 2, 5, 1, 6, 0} {}
+    // reseta a tabela hash usada pelo solver
+    void reset()
+    {
+        t.reset();
+    }
     // retorna o número de tabuleiros explorados
     unsigned long long get_nodes()
     {

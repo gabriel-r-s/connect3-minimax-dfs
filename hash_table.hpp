@@ -1,6 +1,7 @@
 // implementação de uma tabela hash sem gerenciamento de colisões
 #include <cstdint>
 #include <vector>
+#include<cstring>
 // estrutura representando um elemento da tabela
 typedef struct
 {
@@ -20,6 +21,11 @@ class hash_table
 
 public:
     hash_table() : table(table_size) {}
+    // função para limpar a tabela
+    void reset()
+    {
+        memset(table.data(), 0, table_size*sizeof(hash_table_element));
+    }
     // função para inserir elementos na tabela
     void insert(uint64_t key, uint8_t val)
     {
