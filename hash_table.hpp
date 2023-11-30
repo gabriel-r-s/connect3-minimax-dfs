@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <vector>
 #include <cstring>
+#ifndef HASH_TABLE_HPP
+#define HASH_TABLE_HPP
 // estrutura representando um elemento da tabela
 typedef struct
 {
@@ -56,3 +58,4 @@ public:
     // contador de hit e miss
     uint64_t hit = 0, miss = 0;
 };
+#endif

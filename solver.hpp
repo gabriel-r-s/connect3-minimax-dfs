@@ -1,6 +1,8 @@
 // esse arquivo contém a classe solver, uma classe que resolve o connect 4 usando minimax e busca em profundidade
 #include "board.hpp"
 #include "hash_table.hpp"
+#ifndef SOLVER_HPP
+#define SOLVER_HPP
 class solver
 {
 private:
@@ -103,3 +105,4 @@ public:
         return t.miss;
     }
 };
+#endif

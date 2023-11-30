@@ -1,5 +1,7 @@
 // esse arquivo contém uma classe para representar tabuleiros do jogo connect 4.
 #include <cstdint>
+#ifndef BOARD_HPP
+#define BOARD_HPP
 // retorna um bit field contendo 1 no ponto mais baixo de cada coluna(está declarado fora porque precisamos dele para calcular valores de constantes dentro da classe)
 constexpr static uint64_t bottom(int width, int height)
 {
@@ -15,6 +17,15 @@ public:
     // limite das pontuações
     static const int min_score = -(width * height) / 2 + 3;
     static const int max_score = (width * height) / 2 - 3;
+    // retorna uma pontuação para um determinado movimento nno tabuleiro (números de espaços livres que conectam 4)
+    int score(uint64_t move) const
+    {
+        unsigned int c = 0;
+        uint64_t t = compute_winning_position(player_stones | move, stones);
+        for (c = 0; t; c++)
+            t &= t - 1;
+        return c;
+    }
     // verifica se existe espaço livre em uma coluna
     bool can_play(int col) const
     {
@@ -161,3 +172,4 @@ public:
         return ((uint64_t(1) << height) - 1) << col * (height + 1);
     }
 };
+#endif
