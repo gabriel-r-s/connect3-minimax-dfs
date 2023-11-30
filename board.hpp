@@ -1,5 +1,10 @@
 // esse arquivo contém uma classe para representar tabuleiros do jogo connect 4.
 #include <cstdint>
+// retorna um bit field contendo 1 no ponto mais baixo de cada coluna(está declarado fora porque precisamos dele para calcular valores de constantes dentro da classe)
+constexpr static uint64_t bottom(int width, int height)
+{
+    return width == 0 ? 0 : bottom(width - 1, height) | 1LL << (width - 1) * (height + 1);
+}
 class board
 {
 public:
@@ -94,10 +99,11 @@ public:
         return false;
     }
     // gera uma chave única para o tabuleiro atual
-    uint64_t key()const
+    uint64_t key() const
     {
         return stones + player_stones;
     }
+
 private:
     // contador de movimentos, indica quantas pedras já foram jogadas
     unsigned int moves = 0;
@@ -105,4 +111,6 @@ private:
     uint64_t player_stones = 0;
     // bit field representando qualquer pedra no tabuleiro
     uint64_t stones = 0;
+    // bit field contendo 1s na parte de baixo de cada coluna
+    uint64_t bottom_masc = bottom(width, height);
 };
