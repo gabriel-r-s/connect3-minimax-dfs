@@ -1,7 +1,7 @@
 // implementação de uma tabela hash sem gerenciamento de colisões
 #include <cstdint>
 #include <vector>
-#include<cstring>
+#include <cstring>
 // estrutura representando um elemento da tabela
 typedef struct
 {
@@ -11,7 +11,7 @@ typedef struct
 class hash_table
 {
     // quantidade de elementos na tabela (multiplique por 8 para obter tamanho em bytes)
-    static const unsigned int table_size = 16777259;// número primo
+    static const unsigned int table_size = 16777259; // número primo
     std::vector<hash_table_element> table;
     // função para calcular índice de uma chave
     unsigned int get_index(uint64_t key)
@@ -24,7 +24,9 @@ public:
     // função para limpar a tabela
     void reset()
     {
-        memset(table.data(), 0, table_size*sizeof(hash_table_element));
+        memset(table.data(), 0, table_size * sizeof(hash_table_element));
+        hit = 0;
+        miss = 0;
     }
     // função para inserir elementos na tabela
     void insert(uint64_t key, uint8_t val)
@@ -43,8 +45,14 @@ public:
         {
             unsigned int i = get_index(key);
             if (key == table[i].key)
+            {
+                hit++;
                 return table[i].val;
+            }
         }
+        miss++;
         return 0;
     }
+    // contador de hit e miss
+    uint64_t hit = 0, miss = 0;
 };

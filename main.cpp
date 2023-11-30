@@ -19,7 +19,7 @@ string test_line(string sec, string expected_score, solver &s)
         timer t;
         int score = s.mini_max(b, -b.width * b.height / 2, b.width * b.height / 2); // são os extremos da função de avaliação.
         auto temp = t.elapsed();
-        final << sec << '\t' << expected_score << '\t' << score << '\t' << s.get_nodes() << '\t' << temp << '\n';
+        final << sec << '\t' << expected_score << '\t' << score << '\t' << s.get_nodes() << '\t' << temp << '\t' << s.t.hit << '\t' << s.t.miss << '\n';
     }
     return final.str();
 }
@@ -34,7 +34,7 @@ void test_minimax(const char *in_filename)
         ofstream outfile(out_filename);
         if (outfile)
         {
-            outfile << "lista de jogadas\tpontos esperados\tpontos obtidos\ttabuleiros explorados\ttempo executado (nano-segundos)\n";
+            outfile << "lista de jogadas\tpontos esperados\tpontos obtidos\ttabuleiros explorados\ttempo executado (nano-segundos)\thash_table_hit\thash_table_miss\n";
             outfile.close();
             string sec, expected_score;
             solver s;

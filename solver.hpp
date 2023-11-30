@@ -8,9 +8,6 @@ private:
     // contador de tabuleiros explorados
     unsigned long long explored_nodes;
 
-    // tabela para o minimax
-    hash_table t;
-
 public:
     // construtor padrão, inicialisa a matriz de exploração
     solver() : explored_nodes(0), explore_order{3, 4, 2, 5, 1, 6, 0} {}
@@ -73,4 +70,6 @@ beta<=pr então beta<=vr<=pr
         t.insert(b.key(), alpha - b.min_score + 1); // ou a pontuação é essa, ou ela é menor que essa
         return alpha;
     }
+    // tabela para o minimax
+    hash_table t;
 };
