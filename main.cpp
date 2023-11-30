@@ -17,9 +17,9 @@ string test_line(string sec, string expected_score, solver &s)
     else
     {
         timer t;
-        int score = s.mini_max(b, -b.width * b.height / 2, b.width * b.height / 2); // são os extremos da função de avaliação.
+        int score = s.solve_minimax(b);
         auto temp = t.elapsed();
-        final << sec << '\t' << expected_score << '\t' << score << '\t' << s.get_nodes() << '\t' << temp << '\t' << s.t.hit << '\t' << s.t.miss << '\n';
+        final << sec << '\t' << expected_score << '\t' << score << '\t' << s.get_nodes() << '\t' << temp << '\t' << s.get_hits() << '\t' << s.get_misses() << '\n';
     }
     return final.str();
 }

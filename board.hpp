@@ -61,15 +61,15 @@ public:
         uint64_t forced_moves = possible_mask & opponent_win;
         if (forced_moves)
         {
-            if (forced_moves & (forced_moves - 1)) // check if there is more than one forced move
-                return 0;                          // qualquer lugar vai fazer eu perder, então 0
+            if (forced_moves & (forced_moves - 1))
+                return 0; // qualquer lugar vai fazer eu perder, então 0
             else
-                possible_mask = forced_moves; // enforce to play the single forced move
+                possible_mask = forced_moves; // sou obrigado a jogar nesse lugar
         }
         return possible_mask & ~(opponent_win >> 1); // não queremos jogar abaixo de um ponto de vitória do jogador
     }
     // retorna a quantidade de movimentos realisados no tabuleiro
-    unsigned int get_moves() const
+    int get_moves() const
     {
         return moves;
     }
@@ -138,11 +138,6 @@ private:
 
         return r & (full_board ^ mask);
     }
-    // retorna um bitfield contendo 1s na coluna passada como argumento
-    static constexpr uint64_t column_mask(int col)
-    {
-        return ((uint64_t(1) << height) - 1) << col * (height + 1);
-    }
     // retorna um bitfield contendo um 1 no ponto mais baixo da coluna passada como argumento
     static constexpr uint64_t bottom_mask(int col)
     {
@@ -157,5 +152,12 @@ private:
     uint64_t possible_moves() const
     {
         return (stones + bottom_mask_v) & full_board;
+    }
+
+public:
+    // retorna um bitfield contendo 1s na coluna passada como argumento
+    static constexpr uint64_t column_mask(int col)
+    {
+        return ((uint64_t(1) << height) - 1) << col * (height + 1);
     }
 };

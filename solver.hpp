@@ -4,9 +4,65 @@
 class solver
 {
 private:
+    // tabela para o minimax
+    hash_table t;
     int explore_order[board::width];
     // contador de tabuleiros explorados
     unsigned long long explored_nodes;
+    /*
+Implementação do minimax alpha beta.
+Retorna a pontuação do tabuleiro rescebido como argumento.
+usa a função:
+22-num_pedras_jogadas_ganhador
+para calcular a pontuação do tabuleiro
+pr=pontuação real
+vr= valor retornado
+pr <= alpha então alpha>=vr>=pr
+alpha<=pr<=beta então vr==pr
+beta<=pr então beta<=vr<=pr
+*/
+    int mini_max(const board &b, int alpha, int beta)
+    {
+        explored_nodes++;                           // contador de tabuleiros explorados
+        uint64_t next = b.possibleNonLosingMoves(); // bitfield contendo 1 para cada coluna que não faz o oponente ganhar no próximo turno
+        if (!next)
+            return -(board::width * board::height - b.get_moves()) / 2; // você perdeu
+        if (b.get_moves() == board::width * board::height)              // verifica por empate
+            return 0;
+
+        int min = -(board::width * board::height - 2 - b.get_moves()) / 2; // limite mínimo da pontuação, já que o oponente não pode ganhar no próximo movimento
+        if (alpha < min)
+        {
+            alpha = min; // não faz sentido alpha ser menor que a pontuação mínima
+            if (alpha >= beta)
+                return alpha; // o intervalo de busca está vasio, não tem nada pra procurar
+        }
+
+        int max = (board::width * board::height - 1 - b.get_moves()) / 2; // calculamos a pontuação máxima que podemos obter, conciderando que não podemos ganhar com uma jogada
+        if (int val = t.get(b.key()))
+            max = val + b.min_score - 1; // sabemos que a pontuação de b é <= esse valor da tabela, então podemos definir o limite superior com base nisso
+        if (beta > max)
+        {
+            beta = max; // não faz sentido beta ser maior que a pontuação máxima
+            if (alpha >= beta)
+                return beta; // o intervalo de busca está vasio, não tem nada pra procurar
+        }
+
+        for (int x = 0; x < board::width; x++) // verifica as pontuações dos próximos movimentos e retorna o melhor
+            if (next & board::column_mask(explore_order[x]))
+            {
+                board b2(b);
+                b2.play(explore_order[x]);
+                int score = -mini_max(b2, -beta, -alpha); // a função é oposta, 22 para mim é -22 para o oponente
+                if (score >= beta)
+                    return score; // já encontramos uma pontuação boa o suficiente (não salvamos na tabela porque a pontuação pode ser maior que ela)
+                if (score > alpha)
+                    alpha = score; // vamos diminuir a janela de busca
+            }
+
+        t.insert(b.key(), alpha - b.min_score + 1); // ou a pontuação é essa, ou ela é menor que essa
+        return alpha;
+    }
 
 public:
     // construtor padrão, inicialisa a matriz de exploração
@@ -22,54 +78,28 @@ public:
     {
         return explored_nodes;
     }
+
     /*
-Implementação do minimax alpha beta.
-Retorna a pontuação do tabuleiro rescebido como argumento.
-usa a função:
-22-num_pedras_jogadas_ganhador
-para calcular a pontuação do tabuleiro
-pr=pontuação real
-vr= valor retornado
-pr <= alpha então alpha>=vr>=pr
-alpha<=pr<=beta então vr==pr
-beta<=pr então beta<=vr<=pr
-*/
-    int mini_max(const board &b, int alpha, int beta)
+    resolve connect 4 usando minimax
+    retorna a pontuação do tabuleiro recebido, maior é melhor para o jogador atual.
+    weak, um resolvedor fraco vai fazer uma busca no intervalo -1, 1: o que retornará a primeira pontuação de vitória encontrada, ou <1 caso não seja pocível ganhar a partir do nó expecífico
+    */
+    int solve_minimax(board &b, bool weak = false)
     {
-        explored_nodes++; // contador de tabuleiros explorados
-
-        if (b.get_moves() == board::width * board::height) // verifica por empate
-            return 0;
-
-        for (int x = 0; x < board::width; x++) // verificando se o jogador atual pode ganhar no próximo movimento
-            if (b.can_play(x) && b.wins(x))
-                return (board::width * board::height + 1 - b.get_moves()) / 2;
-
-        int max = (board::width * board::height - 1 - b.get_moves()) / 2; // calculamos a pontuação máxima que podemos obter, conciderando que não podemos ganhar com uma jogada
-        if (int val = t.get(b.key()))
-            max = val + b.min_score - 1; // nóz sabemos que a pontuação de b é <= esse valor da tabela, então podemos definir o limite superior do beta com base nisso
-        if (beta > max)
-        {
-            beta = max; // não faz sentido beta ser maior que a pontuação máxima
-            if (alpha >= beta)
-                return beta; // o intervalo de busca está vasio, não tem nada pra procurar
-        }
-
-        for (int x = 0; x < board::width; x++) // verifica as pontuações dos próximos movimentos e retorna o melhor
-            if (b.can_play(explore_order[x]))
-            {
-                board b2(b);
-                b2.play(explore_order[x]);
-                int score = -mini_max(b2, -beta, -alpha); // a função é oposta, 22 para mim é -22 para o oponente
-                if (score >= beta)
-                    return score; // já encontramos uma pontuação boa o suficiente (não salvamos na tabela porque a pontuação pode ser maior que ela)
-                if (score > alpha)
-                    alpha = score; // vamos diminuir a janela de busca
-            }
-
-        t.insert(b.key(), alpha - b.min_score + 1); // ou a pontuação é essa, ou ela é menor que essa
-        return alpha;
+        if (b.canWinNext()) // para diminuir a quantidade de nós explorados o nosso minimax não busca por nós vitoriósos no próximo turno, vamos fazer isso por ele aqui.
+            return (board::width * board::height + 1 - b.get_moves()) / 2;
+        int alpha = weak ? -1 : -b.width * b.height / 2;
+        int beta = weak ? 1 : b.width * b.height / 2;
+        return mini_max(b, alpha, beta);
     }
-    // tabela para o minimax
-    hash_table t;
+    // retorna a quantidade de hits da tabela
+    uint64_t get_hits()
+    {
+        return t.hit;
+    }
+    // retorna a quantidade de misses da tabela
+    uint64_t get_misses()
+    {
+        return t.miss;
+    }
 };
