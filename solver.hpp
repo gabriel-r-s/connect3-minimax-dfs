@@ -10,13 +10,15 @@ private:
 
     // tabela para o minimax
     hash_table t;
+
 public:
     // construtor padrão, inicialisa a matriz de exploração
     solver() : explored_nodes(0), explore_order{3, 4, 2, 5, 1, 6, 0} {}
-    // reseta a tabela hash usada pelo solver
+    // reseta a tabela hash usada pelo solver e a quantidade de tabuleiros explorados
     void reset()
     {
         t.reset();
+        explored_nodes = 0;
     }
     // retorna o número de tabuleiros explorados
     unsigned long long get_nodes()
@@ -47,8 +49,8 @@ beta<=pr então beta<=vr<=pr
                 return (board::width * board::height + 1 - b.get_moves()) / 2;
 
         int max = (board::width * board::height - 1 - b.get_moves()) / 2; // calculamos a pontuação máxima que podemos obter, conciderando que não podemos ganhar com uma jogada
-        if(int val =t.get(b.key()))
-            max = val + b.min_score - 1;// nóz sabemos que a pontuação de b é <= esse valor da tabela, então podemos definir o limite superior do beta com base nisso
+        if (int val = t.get(b.key()))
+            max = val + b.min_score - 1; // nóz sabemos que a pontuação de b é <= esse valor da tabela, então podemos definir o limite superior do beta com base nisso
         if (beta > max)
         {
             beta = max; // não faz sentido beta ser maior que a pontuação máxima
@@ -68,7 +70,7 @@ beta<=pr então beta<=vr<=pr
                     alpha = score; // vamos diminuir a janela de busca
             }
 
-        t.insert(b.key(), alpha - b.min_score + 1);// ou a pontuação é essa, ou ela é menor que essa
+        t.insert(b.key(), alpha - b.min_score + 1); // ou a pontuação é essa, ou ela é menor que essa
         return alpha;
     }
 };
