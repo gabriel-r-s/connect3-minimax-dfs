@@ -51,9 +51,9 @@ beta<=pr então beta<=vr<=pr
                 return beta; // o intervalo de busca está vasio, não tem nada pra procurar
         }
         move_sorter my_moves;
-        for (int x = 0; x < board::width; x++) // ordena os movimentos em uma ordem do melhor para o pior usando a nossa função de pontuação como base
-            if (uint64_t move = (next & board::column_mask(explore_order[x])))
-                my_moves.add(move, 0);
+        for (int x = board::width; x--;) // ordena os movimentos em uma ordem do melhor para o pior usando a nossa função de pontuação como base (o nosso ordenador funciona melhor se inserirmos do pior para o melhor)
+            if (uint64_t move = next & board::column_mask(explore_order[x]))
+                my_moves.add(move, b.score(move));
         while (uint64_t move = my_moves.get()) // verificando o melhor movimento
         {
             board b2(b);

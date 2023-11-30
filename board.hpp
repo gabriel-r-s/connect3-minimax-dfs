@@ -37,8 +37,15 @@ public:
         return winning_position() & possible_moves();
     }
 
+    // faz um determinado movimento (não verifica validade do movimento)
+    void play(uint64_t move)
+    {
+        player_stones ^= stones; // as pedras do jogador são trocadas pelas pedras do próximo jogador
+        stones |= move;
+        moves++;
+    }
     // faz a jogada em uma determinada coluna (não verifica se a jogada é pocível ou não)
-    void play(int col)
+    void play_col(int col)
     {
         player_stones ^= stones; // o bit field contendo a lista de pedras do jogador atual contém agora as pedras do próximo jogador
         stones |= stones + bottom_mask(col);
@@ -59,7 +66,7 @@ public:
         {
             if (!can_play(sec[sec_pos] - '1') || wins(sec[sec_pos] - '1')) // o jogador atual ganha, ou a coluna está cheia
                 break;
-            play(sec[sec_pos] - '1');
+            play_col(sec[sec_pos] - '1');
             sec_pos++;
         }
         return sec_pos;
