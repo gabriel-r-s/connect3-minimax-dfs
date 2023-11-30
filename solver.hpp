@@ -52,8 +52,8 @@ beta<=pr então beta<=vr<=pr
         }
         move_sorter my_moves;
         for (int x = 0; x < board::width; x++) // ordena os movimentos em uma ordem do melhor para o pior usando a nossa função de pontuação como base
-            if (uint64_t move = next & board::column_mask(explore_order[x]))
-                my_moves.add(move, b.score(move));
+            if (uint64_t move = (next & board::column_mask(explore_order[x])))
+                my_moves.add(move, 0);
         while (uint64_t move = my_moves.get()) // verificando o melhor movimento
         {
             board b2(b);
