@@ -31,7 +31,7 @@ public:
     // função para inserir elementos na tabela
     void insert(uint64_t key, uint8_t val)
     {
-        if (key < (1ll << 56))
+        if (key < (1LL << 56))
         {
             unsigned int i = get_index(key);
             table[i].key = key;
@@ -41,7 +41,7 @@ public:
     // função para obter o valor de um elemento da tabela (0 indica valor não existente)
     uint8_t get(uint64_t key)
     {
-        if (key < (1LL < 56))
+        if (key < (1LL << 56))
         {
             unsigned int i = get_index(key);
             if (key == table[i].key)
