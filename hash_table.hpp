@@ -10,7 +10,7 @@ typedef struct
 class hash_table
 {
     // quantidade de elementos na tabela (multiplique por 8 para obter tamanho em bytes)
-    static const unsigned int table_size = 16777216;
+    static const unsigned int table_size = 16777259;// número primo
     std::vector<hash_table_element> table;
     // função para calcular índice de uma chave
     unsigned int get_index(uint64_t key)
