@@ -20,27 +20,18 @@ public:
     {
         return (stones & top_mask(col)) == 0;
     }
-    // retorna o bitfield representando o topo da coluna no argumento
-    static uint64_t top_mask(int col)
+    // verifica se o jogador atual pode ganhar  com uma jogada
+    bool canWinNext() const
     {
-        return (uint64_t(1) << (height - 1)) << col * (height + 1);
+        return winning_position() & possible_moves();
     }
-    // retorna um bitfield contendo um 1 no ponto mais baixo da coluna passada como argumento
-    static uint64_t bottom_mask(int col)
-    {
-        return uint64_t(1) << col * (height + 1);
-    }
+
     // faz a jogada em uma determinada coluna (não verifica se a jogada é pocível ou não)
     void play(int col)
     {
         player_stones ^= stones; // o bit field contendo a lista de pedras do jogador atual contém agora as pedras do próximo jogador
         stones |= stones + bottom_mask(col);
         moves++;
-    }
-    // retorna um bitfield contendo um 1 no ponto mais baixo da coluna passada como argumento
-    static uint64_t bottom_mask(int col)
-    {
-        return uint64_t(1) << col * (height + 1);
     }
     /*
     faz uma sequência de jogadas.
@@ -62,6 +53,21 @@ public:
         }
         return sec_pos;
     }
+    // retorna um bitfield contendo 1 para cada posição que o jogador atual pode jogar sem fazer o oponente ganhar no próxino turno
+    uint64_t possibleNonLosingMoves() const
+    {
+        uint64_t possible_mask = possible_moves();
+        uint64_t opponent_win = opponent_winning_position();
+        uint64_t forced_moves = possible_mask & opponent_win;
+        if (forced_moves)
+        {
+            if (forced_moves & (forced_moves - 1)) // check if there is more than one forced move
+                return 0;                          // qualquer lugar vai fazer eu perder, então 0
+            else
+                possible_mask = forced_moves; // enforce to play the single forced move
+        }
+        return possible_mask & ~(opponent_win >> 1); // não queremos jogar abaixo de um ponto de vitória do jogador
+    }
     // retorna a quantidade de movimentos realisados no tabuleiro
     unsigned int get_moves() const
     {
@@ -70,38 +76,7 @@ public:
     // verifica se jogar em uma coluna resulta na vitória do jogador atual
     bool wins(int col) const
     {
-        uint64_t temp = player_stones | ((stones + bottom_mask(col)) & column_mask(col));
-        return alignment(temp);
-    }
-    // retorna um bitfield contendo 1s na coluna passada como argumento
-    static uint64_t column_mask(int col)
-    {
-        return ((uint64_t(1) << height) - 1) << col * (height + 1);
-    }
-    // verifica se o bitfield das pedras do player passado como argumento tem um alinhamento
-    static bool alignment(uint64_t pos)
-    {
-        // horizontal
-        uint64_t m = pos & (pos >> (height + 1));
-        if (m & (m >> (2 * (height + 1))))
-            return true;
-
-        // diagonal 1
-        m = pos & (pos >> height);
-        if (m & (m >> (2 * height)))
-            return true;
-
-        // diagonal 2
-        m = pos & (pos >> (height + 2));
-        if (m & (m >> (2 * (height + 2))))
-            return true;
-
-        // vertical;
-        m = pos & (pos >> 1);
-        if (m & (m >> 2))
-            return true;
-
-        return false;
+        return winning_position() & possible_moves() & column_mask(col);
     }
     // gera uma chave única para o tabuleiro atual
     uint64_t key() const
@@ -112,12 +87,75 @@ public:
 private:
     // contador de movimentos, indica quantas pedras já foram jogadas
     unsigned int moves = 0;
-    // bit field representando as pedras do jogador atual
+    // bitfield representando as pedras do jogador atual
     uint64_t player_stones = 0;
-    // bit field representando qualquer pedra no tabuleiro
+    // bitfield representando qualquer pedra no tabuleiro
     uint64_t stones = 0;
-    // bit field contendo 1s na parte de baixo de cada coluna
+    // bitfield contendo 1s na parte de baixo de cada coluna
     static const uint64_t bottom_mask_v = bottom(width, height);
     // bitfield contendo a representação de um tabuleiro cheio
-    static const uint64_t full_board = bottom_mask_v * ((1ll << height)-1);
+    static const uint64_t full_board = bottom_mask_v * ((1ll << height) - 1);
+    // retorna um bitfield contendo 1 para cada posição que o jogador atualpode ganhar
+    uint64_t winning_position() const
+    {
+        return compute_winning_position(player_stones, stones);
+    }
+
+    // retorna um bitfield contendo 1 para cada posição que o oponente pode ganhar
+    uint64_t opponent_winning_position() const
+    {
+        return compute_winning_position(player_stones ^ stones, stones);
+    }
+    // retorna um bit field contendo 1 em cada ponto que gera um alinhamento conciderando que as pedras do jogador atual estão no bitfield position, e que o bitfield mask contém as pedras do tabuleiro
+    static uint64_t compute_winning_position(uint64_t position, uint64_t mask)
+    {
+        // vertical;
+        uint64_t r = (position << 1) & (position << 2) & (position << 3);
+
+        // horizontal
+        uint64_t p = (position << (height + 1)) & (position << 2 * (height + 1));
+        r |= p & (position << 3 * (height + 1));
+        r |= p & (position >> (height + 1));
+        p >>= 3 * (height + 1);
+        r |= p & (position << (height + 1));
+        r |= p & (position >> 3 * (height + 1));
+
+        // diagonal 1
+        p = (position << height) & (position << 2 * height);
+        r |= p & (position << 3 * height);
+        r |= p & (position >> height);
+        p >>= 3 * height;
+        r |= p & (position << height);
+        r |= p & (position >> 3 * height);
+
+        // diagonal 2
+        p = (position << (height + 2)) & (position << 2 * (height + 2));
+        r |= p & (position << 3 * (height + 2));
+        r |= p & (position >> (height + 2));
+        p >>= 3 * (height + 2);
+        r |= p & (position << (height + 2));
+        r |= p & (position >> 3 * (height + 2));
+
+        return r & (full_board ^ mask);
+    }
+    // retorna um bitfield contendo 1s na coluna passada como argumento
+    static constexpr uint64_t column_mask(int col)
+    {
+        return ((uint64_t(1) << height) - 1) << col * (height + 1);
+    }
+    // retorna um bitfield contendo um 1 no ponto mais baixo da coluna passada como argumento
+    static constexpr uint64_t bottom_mask(int col)
+    {
+        return uint64_t(1) << col * (height + 1);
+    }
+    // retorna o bitfield representando o topo da coluna no argumento
+    static constexpr uint64_t top_mask(int col)
+    {
+        return (uint64_t(1) << (height - 1)) << col * (height + 1);
+    }
+    // retorna um bitfield contendo 1 para cada ponto jogável do tabuleiro
+    uint64_t possible_moves() const
+    {
+        return (stones + bottom_mask_v) & full_board;
+    }
 };
