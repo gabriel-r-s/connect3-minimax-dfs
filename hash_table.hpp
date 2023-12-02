@@ -15,11 +15,6 @@ class hash_table
     // quantidade de elementos na tabela (multiplique por 8 para obter tamanho em bytes)
     static const unsigned int table_size = 16777259; // número primo
     std::vector<hash_table_element> table;
-    // função para calcular índice de uma chave
-    unsigned int get_index(uint64_t key)
-    {
-        return key % table_size;
-    }
 
 public:
     hash_table() : table(table_size) {}
@@ -33,24 +28,20 @@ public:
     // função para inserir elementos na tabela
     void insert(uint64_t key, uint8_t val)
     {
-        if (key < (1LL << 56))
-        {
-            unsigned int i = get_index(key);
-            table[i].key = key;
-            table[i].val = val;
-        }
+        unsigned int i = key % table_size;
+        ;
+        table[i].key = key;
+        table[i].val = val;
     }
     // função para obter o valor de um elemento da tabela (0 indica valor não existente)
     uint8_t get(uint64_t key)
     {
-        if (key < (1LL << 56))
+        unsigned int i = key % table_size;
+        ;
+        if (key == table[i].key)
         {
-            unsigned int i = get_index(key);
-            if (key == table[i].key)
-            {
-                hit++;
-                return table[i].val;
-            }
+            hit++;
+            return table[i].val;
         }
         miss++;
         return 0;
