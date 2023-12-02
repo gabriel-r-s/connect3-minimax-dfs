@@ -1,5 +1,7 @@
 // esse arquivo contém uma classe para representar tabuleiros do jogo connect 4.
 #include <cstdint>
+#include <string>
+using std::string;
 #ifndef BOARD_HPP
 #define BOARD_HPP
 // retorna um bit field contendo 1 no ponto mais baixo de cada coluna(está declarado fora porque precisamos dele para calcular valores de constantes dentro da classe)
@@ -17,7 +19,26 @@ public:
     // limite das pontuações
     static const int min_score = -(width * height) / 2 + 3;
     static const int max_score = (width * height) / 2 - 3;
-    // retorna uma pontuação para um determinado movimento nno tabuleiro (números de espaços livres que conectam 4)
+    // retorna uma string representando o tabuleiro atual, x para o jogador atual, e o para o oponente
+    string prepare_printable()
+    {
+        string final;
+        for (uint64_t mask = 1 << (height - 1); mask; mask >>= 1)
+        {
+            for (uint64_t b_mask = mask; b_mask < mask << ((height + 1) * width); b_mask <<= (height + 1))
+            {
+                if (!(stones & b_mask))
+                    final += '.';
+                else if (player_stones & b_mask)
+                    final += 'x';
+                else
+                    final += 'o';
+            }
+            final += '\n';
+        }
+        return final;
+    }
+    // retorna uma pontuação para um determinado movimento no tabuleiro (números de espaços livres que conectam 4)
     int score(uint64_t move) const
     {
         unsigned int c = 0;
@@ -64,9 +85,10 @@ public:
         unsigned int sec_pos = 0;
         while (sec[sec_pos])
         {
-            if (!can_play(sec[sec_pos] - '1') || wins(sec[sec_pos] - '1')) // o jogador atual ganha, ou a coluna está cheia
+            int move = sec[sec_pos] - '1';                              // coluna
+            if (move<0 || move >= width || !can_play(move) || wins(move)) // o jogador atual ganha, ou a coluna está cheia, ou a coluna era inválida
                 break;
-            play_col(sec[sec_pos] - '1');
+            play_col(move);
             sec_pos++;
         }
         return sec_pos;
