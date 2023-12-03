@@ -51,15 +51,11 @@ void test_minimax(const char *in_filename)
 }
 int main()
 {
-    thread t1(test_minimax, "Test_L3_R1");
-    thread t2(test_minimax, "Test_L2_R1");
-    thread t3(test_minimax, "Test_L2_R2");
-    thread t4(test_minimax, "Test_L1_R1");
-    thread t5(test_minimax, "Test_L1_R2");
-    thread t6(test_minimax, "Test_L1_R3");
-    timer t;
-    while (t.elapsed()<3600*1e+9)
+    solver s;
+    while(1)
     {
-        Sleep(1000);
+        string str;
+        std::getline(cin, str);
+        cout << test_line(str, "", s);
     }
 }

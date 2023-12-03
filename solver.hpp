@@ -1,12 +1,23 @@
 // esse arquivo contém a classe solver, uma classe que resolve o connect 4 usando minimax e busca em profundidade
 #include "board.hpp"
 #include "hash_table.hpp"
+#include <unordered_map>
 #include "move_sorter.hpp"
+#include <stdio.h>
+using std::unordered_map;
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
+typedef struct
+{
+    uint64_t key : 56;
+    int8_t val;
+} element;
+
 class solver
 {
 private:
+    // tabuleiros iniciais
+    unordered_map<uint64_t, int8_t> opening;
     // tabela para o minimax
     hash_table t;
     int explore_order[board::width];
@@ -14,12 +25,12 @@ private:
     unsigned long long explored_nodes;
     /*
     implementação do busca em profundidade limitada.
-    retorna 1 se um estado final pode ser atingido apartir do nó, 0 função de corte e -1 caso só exista vitórias do oponente como estados finais na profundidade usada.
+    retorna depth+1  se for pocível ganhar apartir do nó e ele for um nó seu, ou 0 caso contrário
     */
-    int lfs(int depth, const board &b)
+    int lfs(int depth, const board &b, bool oponent = false)
     {
-        if (b.canWinNext())
-            return 1;
+        if (b.canWinNext() && !oponent)
+            return depth + 1;
         if (!depth)
             return 0;
         int64_t final = 0;
@@ -29,12 +40,12 @@ private:
             {
                 board b2 = b;
                 b2.play_col(i);
-                final = -lfs(depth - 1, b2);
-                if (final == 1) // encontramos o estado desejado
-                    break;
+                int temp = lfs(depth - 1, b2, !oponent);
+                if (temp > final) // achamos um caminho mais curto
+                    final = temp;
             }
         }
-        return final;// não encontramos, mas ele pode estar mais abaixo na árvore
+        return final;
     }
     /*
 Implementação do minimax alpha beta.
@@ -94,8 +105,18 @@ beta<=pr então beta<=vr<=pr
     }
 
 public:
-    // construtor padrão, inicialisa a matriz de exploração
-    solver() : explored_nodes(0), explore_order{3, 4, 2, 5, 1, 6, 0} {}
+    // construtor padrão, inicialisa a matriz de exploração e carrega o arquivo com os tabuleiros iniciais
+    solver() : explored_nodes(0), explore_order{3, 4, 2, 5, 1, 6, 0}
+    {
+        auto f = fopen64("game.tree", "rb");
+        if (f)
+        {
+            element e;
+            while (fread(&e, sizeof(element), 1, f))
+                opening[e.key] = e.val;
+            fclose(f);
+        }
+    }
     // reseta a tabela hash usada pelo solver e a quantidade de tabuleiros explorados
     void reset()
     {
@@ -117,6 +138,8 @@ public:
     {
         if (b.canWinNext()) // para diminuir a quantidade de nós explorados o nosso minimax não busca por nós vitoriósos no próximo turno, vamos fazer isso por ele aqui.
             return (board::width * board::height + 1 - b.get_moves()) / 2;
+        if (opening.find(b.key()) != opening.end()) // o tabuleiro está no livro de abertura
+            return opening[b.key()];
         int alpha = weak ? -1 : -b.width * b.height / 2;
         int beta = weak ? 1 : b.width * b.height / 2;
         return mini_max(b, alpha, beta);

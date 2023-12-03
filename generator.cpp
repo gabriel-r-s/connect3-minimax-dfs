@@ -12,13 +12,8 @@
 #include <mutex>
 #include <stdio.h>
 #include <cmath>
-typedef struct
-{
-    uint64_t key : 56; // a chave do elemento armazenado
-    int8_t val = 0;    // note que o campo acima tem 56bits, e por questão de alinhamento o compilador alocou 64bits para ele, o que significa que os bits mais significativos são usados pelo valor, como nosso tabuleiro só usa os 49 bits menos significativos não à problema
-} element;
 const int num_threads = 32; // número de threads
-const int num_level = 3;    // até qual nível da árvore calcular
+const int num_level = 5;    // até qual nível da árvore calcular
 using std::vector, std::thread, std::cout, std::queue, std::mutex;
 vector<solver> s(num_threads);
 thread **t;
@@ -62,11 +57,11 @@ void run_minimax(board b, element *e, int tindex)
 }
 void join_all()
 {
-    bool stay=true;
+    bool stay = true;
     while (stay)
     {
         tqm.lock();
-            stay = tq.size() < num_threads;
+        stay = tq.size() < num_threads;
         tqm.unlock();
 #if defined __WIN32__ || defined __WIN64__
         Sleep(100);
@@ -74,7 +69,6 @@ void join_all()
         usleep(100000);
 #endif
     }
-    tqm.unlock();
 }
 void generate_seq(string str, int index)
 {
@@ -89,6 +83,7 @@ void generate_seq(string str, int index)
             if (b.play(str.c_str()) == str.size())
             {
                 auto i = get_thread();
+                cout << i << '\n';
                 t[i] = new thread(run_minimax, b, n + size++, i);
             }
         }
@@ -96,8 +91,10 @@ void generate_seq(string str, int index)
 }
 int main()
 {
-    auto f = fopen64("game.tree", "wb");
-    n = new element[int(pow(7, num_level))];
+    size_t max_boards = 0;
+    for (int i = 1; i <= num_level; i++)
+        max_boards += pow(7, num_level)+ 1;
+    n = new element[max_boards];
     t = new thread *[num_threads];
     for (int i = 0; i < num_threads; i++)
         new_thread(i);
@@ -110,9 +107,9 @@ int main()
         seq += '1';
         level++;
     }
+    cout << "aguardando as threads\n";
     join_all();
-
-    for (; size--;)
-        fwrite(n + size, sizeof(element), 1, f);
+    auto f = fopen64("game.tree", "wb");
+    fwrite(n + size, sizeof(element), size, f);
     fclose(f);
 }

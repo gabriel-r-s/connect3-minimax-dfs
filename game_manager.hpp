@@ -78,7 +78,7 @@ class game_manager
                 }
                 board b2 = b;
                 b2.play_col(i);
-                int temp = -s.solve_minimax(b2); // verificamos a pontuação desse tabuleiro, queremos minimisar, por isso negativo.
+                int temp = -s.solve_minimax(b2); // verificamos a pontuação desse tabuleiro note que a pontuação é calculada do ponto de vista do oponente da ia, por isso queremos negativo, queremos minimisar
                 if (temp > max)
                 {
                     max = temp;
@@ -96,28 +96,29 @@ class game_manager
     void lfs_play()
     {
         int col = board::width; // se todos os tabuleiros forem ruins ele jogará aleatoriamente
+        int max = -10;// profundidade + 2 só que negativo por que ele vai retornar do ponto de vista do oponente
         for (int i = 0; i < board::width; i++)
         {
             if (b.can_play(i))
             {
-                if (b.wins(i))
+                if(b.wins(i))
                 {
-                    col = i;
+                    col=i;
                     break;
                 }
                 board b2 = b;
                 b2.play_col(i);
-                int temp = -s.solve_lfs(b2); // verificamos a pontuação desse tabuleiro, queremos minimisar, por isso negativo.
-                if (temp == 1)               // achamos o que queríamos
+                int temp = -s.solve_lfs(b2); // novamente, o lfs retorna depth+1 em caso de vitória, ou 0, como estamos verificando o tabuleiro do oponente queremos o menor valor.
+                if (temp > max)               // achamos um tabuleiro melhor
                 {
                     col = i;
-                    break;
+                    max = temp;
                 }
             }
         }
         if (col < board::width)
             try_play(std::to_string(col + 1));
-        else // foi ativado uma função de corte, vamos jogar aleatoriamente
+        else // foi ativado uma função de corte, ou só tem derrota, vamos jogar aleatoriamente
             random_play();
     }
 
