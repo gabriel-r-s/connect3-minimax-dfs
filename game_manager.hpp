@@ -3,6 +3,8 @@
 #include "solver.hpp"
 #include <stdlib.h>
 #include <iostream>
+#include <random>
+#include <time.h>
 using std::cout, std::cin, std::stoi;
 typedef enum
 {
@@ -30,7 +32,8 @@ class game_manager
     board b;                                  // tabuleiro atual do jogo
     solver s;                                 // resolvedor do jogo
     game_state state = not_finished;          // estado atual do jogo
-                                     // faz uma ou mais jogadas e atualiza o estado do jogo de acordo
+
+    // faz uma ou mais jogadas e atualiza o estado do jogo de acordo
     void try_play(string moves)
     {
         int pos = b.play(moves.c_str());
@@ -51,9 +54,78 @@ class game_manager
         else if (b.get_moves() == board::width * board::height) // fim do jogo por empate
             state = game_draw;
     }
+    // função para jogar aleatório
+    void random_play()
+    {
+        int col = rand() % board::width;
+        while (!b.can_play(col))
+            col = rand() % board::width;
+        try_play(std::to_string(col + 1));
+    }
+    // função para usar o minimax para jogar
+    void minimax_play()
+    {
+        int col = board::width; // se todos os tabuleiros forem ruins ele jogará aleatoriamente
+        int max = -((board::width * board::height + 1 - b.get_moves()) / 2);
+        for (int i = 0; i < board::width; i++)
+        {
+            if (b.can_play(i))
+            {
+                if (b.wins(i))
+                {
+                    col = i;
+                    break;
+                }
+                board b2 = b;
+                b2.play_col(i);
+                int temp = -s.solve_minimax(b2); // verificamos a pontuação desse tabuleiro, queremos minimisar, por isso negativo.
+                if (temp > max)
+                {
+                    max = temp;
+                    col = i;
+                }
+            }
+        }
+        if (col < board::width)
+            try_play(std::to_string(col + 1));
+        else // todas as opções são ruins
+            random_play();
+    }
+
+    // função para usar a busca lfs para jogar
+    void lfs_play()
+    {
+        int col = board::width; // se todos os tabuleiros forem ruins ele jogará aleatoriamente
+        for (int i = 0; i < board::width; i++)
+        {
+            if (b.can_play(i))
+            {
+                if (b.wins(i))
+                {
+                    col = i;
+                    break;
+                }
+                board b2 = b;
+                b2.play_col(i);
+                int temp = -s.solve_lfs(b2); // verificamos a pontuação desse tabuleiro, queremos minimisar, por isso negativo.
+                if (temp == 1)               // achamos o que queríamos
+                {
+                    col = i;
+                    break;
+                }
+            }
+        }
+        if (col < board::width)
+            try_play(std::to_string(col + 1));
+        else // foi ativado uma função de corte, vamos jogar aleatoriamente
+            random_play();
+    }
 
 public:
-    game_manager(ia_type p1_ia_type = ia_type_no_ia, ia_type p2_ia_type = ia_type_no_ia, player_type p1_type = player_type_human, player_type p2_type = player_type_human) : player1_ia_type(p1_ia_type), player2_ia_type(p2_ia_type), player1_type(p1_type), player2_type(p2_type) {}
+    game_manager(ia_type p1_ia_type = ia_type_no_ia, ia_type p2_ia_type = ia_type_no_ia, player_type p1_type = player_type_human, player_type p2_type = player_type_human) : player1_ia_type(p1_ia_type), player2_ia_type(p2_ia_type), player1_type(p1_type), player2_type(p2_type)
+    {
+        srand(time(0));
+    }
     // função para iniciar um jogo
     void start()
     {
@@ -72,6 +144,12 @@ public:
             }
             else // é ia
             {
+                if (it == ia_type_minimax)
+                    minimax_play();
+                else if (it == ia_type_random)
+                    random_play();
+                else // só sobrou o lfs
+                    lfs_play();
             }
         }
         system("cls||clear");

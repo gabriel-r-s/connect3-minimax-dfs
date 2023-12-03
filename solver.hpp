@@ -13,6 +13,30 @@ private:
     // contador de tabuleiros explorados
     unsigned long long explored_nodes;
     /*
+    implementação do busca em profundidade limitada.
+    retorna 1 se um estado final pode ser atingido apartir do nó, 0 função de corte e -1 caso só exista vitórias do oponente como estados finais na profundidade usada.
+    */
+    int lfs(int depth, const board &b)
+    {
+        if (b.canWinNext())
+            return 1;
+        if (!depth)
+            return 0;
+        int64_t final = 0;
+        for (int i = 0; i < board::width; i++)
+        {
+            if (b.can_play(i) && !b.wins(i))
+            {
+                board b2 = b;
+                b2.play_col(i);
+                final = -lfs(depth - 1, b2);
+                if (final == 1) // encontramos o estado desejado
+                    break;
+            }
+        }
+        return final;// não encontramos, mas ele pode estar mais abaixo na árvore
+    }
+    /*
 Implementação do minimax alpha beta.
 Retorna a pontuação do tabuleiro rescebido como argumento.
 usa a função:
@@ -96,6 +120,11 @@ public:
         int alpha = weak ? -1 : -b.width * b.height / 2;
         int beta = weak ? 1 : b.width * b.height / 2;
         return mini_max(b, alpha, beta);
+    }
+    // resolve connect 4 usando lfs
+    int solve_lfs(board b, int depth = 8)
+    {
+        return lfs(depth, b);
     }
     // retorna a quantidade de hits da tabela
     uint64_t get_hits()
