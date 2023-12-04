@@ -10,7 +10,7 @@ void setup_done(int p1_type, int p2_type)
 }
 void setup_game_p2(int p1_type)
 {
-    cout << "escolha o tipo do jogador 2:\n1: ia minimax\n2: ia lfs (busca limitada)\n3: jogadas aleatorias\n4: controlado por humano\n";
+    cout << "escolha o tipo do jogador 2:\n1: ia minimax\n2: ia lds (busca limitada)\n3: jogadas aleatorias\n4: controlado por humano\n";
     string command;
     std::getline(cin, command);
     if (command.size())
@@ -31,7 +31,7 @@ void setup_game_p2(int p1_type)
 }
 void setup_game()
 {
-    cout << "escolha o tipo do jogador 1:\n1: ia minimax\n2: ia lfs (busca limitada)\n3: jogadas aleatorias\n4: controlado por humano\n";
+    cout << "escolha o tipo do jogador 1:\n1: ia minimax\n2: ia lds (busca limitada)\n3: jogadas aleatorias\n4: controlado por humano\n";
     string command;
     std::getline(cin, command);
     if (command.size())

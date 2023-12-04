@@ -27,7 +27,7 @@ class game_manager
         game_draw,
         not_finished
     } game_state;
-    ia_type player1_ia_type, player2_ia_type; // tipo da ia, minimax, lfs ou jogar aleatoriamente, ou sem ia
+    ia_type player1_ia_type, player2_ia_type; // tipo da ia, minimax, lds ou jogar aleatoriamente, ou sem ia
     player_type player1_type, player2_type;   // tipo dos jogadores
     board b;                                  // tabuleiro atual do jogo
     solver s;                                 // resolvedor do jogo
@@ -92,27 +92,26 @@ class game_manager
             random_play();
     }
 
-    // função para usar a busca lfs para jogar
-    void lfs_play()
+    // função para usar a busca lds para jogar
+    void lds_play()
     {
         int col = board::width; // se todos os tabuleiros forem ruins ele jogará aleatoriamente
-        int max = -10;// profundidade + 2 só que negativo por que ele vai retornar do ponto de vista do oponente
         for (int i = 0; i < board::width; i++)
         {
             if (b.can_play(i))
             {
-                if(b.wins(i))
+                if (b.wins(i))
                 {
-                    col=i;
+                    col = i;
                     break;
                 }
                 board b2 = b;
                 b2.play_col(i);
-                int temp = -s.solve_lfs(b2); // novamente, o lfs retorna depth+1 em caso de vitória, ou 0, como estamos verificando o tabuleiro do oponente queremos o menor valor.
-                if (temp > max)               // achamos um tabuleiro melhor
+                int temp = s.solve_lds(b2);
+                if (temp == 1) // achamos um tabuleiro
                 {
                     col = i;
-                    max = temp;
+                    break;
                 }
             }
         }
@@ -149,8 +148,8 @@ public:
                     minimax_play();
                 else if (it == ia_type_random)
                     random_play();
-                else // só sobrou o lfs
-                    lfs_play();
+                else // só sobrou o lds
+                    lds_play();
             }
         }
         system("cls||clear");

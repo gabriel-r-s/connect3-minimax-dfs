@@ -1,4 +1,8 @@
+#if defined __WIN32__ || defined __WIN64__
 #include <windows.h>
+#else
+#include <unistd.h>
+#endif
 #include "solver.hpp"
 #include <fstream>
 #include <sstream>
@@ -17,7 +21,7 @@ string test_line(string sec, string expected_score, solver &s)
     else
     {
         timer t;
-        int score = s.solve_lfs(b);
+        int score = s.solve_minimax(b);
         auto temp = t.elapsed();
         final << sec << '\t' << expected_score << '\t' << score << '\t' << s.get_nodes() << '\t' << temp << '\t' << s.get_hits() << '\t' << s.get_misses() << '\n';
     }
@@ -58,8 +62,12 @@ int main()
     thread t5(test_minimax, "Test_L1_R2");
     thread t6(test_minimax, "Test_L1_R3");
     timer t;
-    while (t.elapsed()<3600*1e+9)
+    while (t.elapsed() < 3600 * 1e+9)
     {
-        Sleep(1000);
+#if defined __WIN32__ || defined __WIN64__
+        Sleep(100);
+#else
+        usleep(100000);
+#endif
     }
 }

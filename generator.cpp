@@ -13,14 +13,14 @@
 #include <stdio.h>
 #include <cmath>
 const int num_threads = 32; // número de threads
-const int num_level = 5;    // até qual nível da árvore calcular
+const int num_level = 6;    // até qual nível da árvore calcular
 using std::vector, std::thread, std::cout, std::queue, std::mutex;
 vector<solver> s(num_threads);
 thread **t;
 queue<int> tq;
 mutex tqm;
 element *n;
-size_t size;
+size_t size = 0;
 void new_thread(int index)
 {
     tqm.lock();
@@ -82,9 +82,8 @@ void generate_seq(string str, int index)
             board b;
             if (b.play(str.c_str()) == str.size())
             {
-                auto i = get_thread();
-                cout << i << '\n';
-                t[i] = new thread(run_minimax, b, n + size++, i);
+                int i = get_thread();
+                t[i] = new thread(run_minimax, b, n + (size++), i);
             }
         }
     }
@@ -93,7 +92,7 @@ int main()
 {
     size_t max_boards = 0;
     for (int i = 1; i <= num_level; i++)
-        max_boards += pow(7, num_level)+ 1;
+        max_boards += pow(7, num_level) + 1;
     n = new element[max_boards];
     t = new thread *[num_threads];
     for (int i = 0; i < num_threads; i++)
@@ -107,9 +106,9 @@ int main()
         seq += '1';
         level++;
     }
-    cout << "aguardando as threads\n";
     join_all();
+    cout << "escrevendo " << size << " entradas para o arquivo" << '\n';
     auto f = fopen64("game.tree", "wb");
-    fwrite(n + size, sizeof(element), size, f);
+    fwrite(n, sizeof(element), size, f);
     fclose(f);
 }

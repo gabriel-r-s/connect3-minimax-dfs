@@ -9,7 +9,7 @@ using std::unordered_map;
 #define SOLVER_HPP
 typedef struct
 {
-    uint64_t key : 56;
+    uint64_t key: 56;
     int8_t val;
 } element;
 
@@ -25,12 +25,11 @@ private:
     unsigned long long explored_nodes;
     /*
     implementação do busca em profundidade limitada.
-    retorna depth+1  se for pocível ganhar apartir do nó e ele for um nó seu, ou 0 caso contrário
     */
-    int lfs(int depth, const board &b, bool oponent = false)
+    int lds(int depth, const board &b, bool oponent = false)
     {
         if (b.canWinNext() && !oponent)
-            return depth + 1;
+            return 1;
         if (!depth)
             return 0;
         int64_t final = 0;
@@ -40,9 +39,9 @@ private:
             {
                 board b2 = b;
                 b2.play_col(i);
-                int temp = lfs(depth - 1, b2, !oponent);
-                if (temp > final) // achamos um caminho mais curto
-                    final = temp;
+                final = lds(depth - 1, b2, !oponent);
+                if (final==1)// achamos solucão
+                    break;
             }
         }
         return final;
@@ -144,10 +143,10 @@ public:
         int beta = weak ? 1 : b.width * b.height / 2;
         return mini_max(b, alpha, beta);
     }
-    // resolve connect 4 usando lfs
-    int solve_lfs(board b, int depth = 8)
+    // resolve connect 4 usando lds
+    int solve_lds(board b, int depth = 8)
     {
-        return lfs(depth, b);
+        return lds(depth, b, true);
     }
     // retorna a quantidade de hits da tabela
     uint64_t get_hits()
