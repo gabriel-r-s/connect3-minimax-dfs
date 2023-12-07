@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <cmath>
 const int num_threads = 32; // número de threads
-const int num_level = 6;    // até qual nível da árvore calcular
+const int num_level = 7;    // até qual nível da árvore calcular
 using std::vector, std::thread, std::cout, std::queue, std::mutex;
 vector<solver> s(num_threads);
 thread **t;
