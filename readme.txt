@@ -1,7 +1,7 @@
 Esta pasta contém os seguintes arquivos:
 board.hpp:
 implementação de um tabuleiro do jogo connect 4, usa máscaras binárias para ser eficiente.
-compile.sh:
+compile.cmd:
 execute esse arquivo para compilar todos os arquivos mencionados aqui.
 game_manager.hpp:
 Código do Sistema que permite jogar o connect 4 de verdade, no geral, apenas código para atualização de estados, e tratamento de entrada e saída.
